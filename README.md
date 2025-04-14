@@ -61,6 +61,7 @@ The error dynamics of the system are given by:
 $$ 
 \dot{e}_x = \omega e_y - v + v_r \cos{e_\theta} 
 $$
+
 $$
 \dot{e}_y = -\omega e_x + v_r \sin{e_\theta}
 $$
