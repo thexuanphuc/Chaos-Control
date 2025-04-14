@@ -60,9 +60,11 @@ The error dynamics of the system are given by:
 $$
 \dot{e}_x = \omega e_y - v + v_r \cos e_\theta
 $$
+
 $$
 \dot{e}_y = -\omega e_x + v_r \sin e_\theta
 $$
+
 $$
 \dot{e}_\theta = \omega_r - \omega
 $$
@@ -94,6 +96,7 @@ The control actions (`v` and `omega`) are designed using Lyapunov stability theo
 $$
 v = v_r \cos e_\theta + K_x e_x
 $$
+
 $$
 \omega = \omega_r + K_\theta e_\theta + v_r K_y e_y
 $$
@@ -108,9 +111,11 @@ Substituting control inputs gives the closed-loop error dynamics:
 $$
 \dot{e}_x = \omega_r e_y + K_\theta e_\theta e_y + v_r K_y e_y^2 - K_x e_x
 $$
+
 $$
 \dot{e}_y = -\omega_r e_x - K_\theta e_\theta e_x - v_r K_y e_x e_y + v_r \sin e_\theta
 $$
+
 $$
 \dot{e}_\theta = -K_\theta e_\theta - v_r K_y e_y
 $$
