@@ -3,7 +3,7 @@ import matplotlib.patches as patches
 import numpy as np
 
 class Simulation:
-    def __init__(self, desired_path, wheel_radius, wheel_width, intial_pose = np.array([0.0, 0.0, 0.0])):
+    def __init__(self, dt, desired_path, wheel_radius, wheel_width, intial_pose = np.array([0.0, 0.0, 0.0])):
         """
         Initialize the map with a desired path.
         :param desired_path: A numpy array of shape (N, 2) representing the desired path.
@@ -12,7 +12,7 @@ class Simulation:
         self.desired_path = desired_path
         self.wheel_radius = wheel_radius
         self.wheel_width = wheel_width
-        self.dt = 0.1
+        self.dt = dt
         self.x, self.y, self.theta = intial_pose
         self.actual_path = np.array([[self.x, self.y]])  # Initialize actual path with the first position
 

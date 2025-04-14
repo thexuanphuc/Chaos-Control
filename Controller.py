@@ -38,6 +38,8 @@ class LyaponovEnergyBasedController(Controller):
         self.v_f = v_max
         self.omega_f = 0.0
 
+        self.closest_index = 0
+
 
     def compute_control(self, robot_state, predefind_path: np.ndarray):
         """
@@ -49,11 +51,11 @@ class LyaponovEnergyBasedController(Controller):
         x, y, theta = robot_state
         # Find the closest point on the predefined path
         distances = np.linalg.norm(predefind_path - np.array([x, y]), axis=1)
-        closest_index = np.argmin(distances) + 1
-        if closest_index == len(predefind_path):
+        self.closest_index = np.argmin(distances) + 1
+        if self.closest_index == len(predefind_path):
             return 0, 0
         else:
-            next_point = predefind_path[closest_index + 1]
+            next_point = predefind_path[self.closest_index + 1]
 
         theta_d = np.arctan2(next_point[1] - y, next_point[0] - x)
         x_d, y_d = next_point

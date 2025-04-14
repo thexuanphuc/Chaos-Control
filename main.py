@@ -73,7 +73,7 @@ def main():
     v_max = 5.0
     omega_max = 6.5
     # Initialize the simulation
-    simulation = Simulation(desired_path, wheel_radius, wheel_width, intial_pose=robot_state)
+    simulation = Simulation(dt, desired_path, wheel_radius, wheel_width, intial_pose=robot_state)
 
     # Initialize the controller
     controller = LyaponovEnergyBasedController(k_forward=k_forward, k_theta=k_theta, predefind_path=desired_path, wheel_width=wheel_width, wheel_radius=wheel_radius, v_max=v_max, omega_max=omega_max)
