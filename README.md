@@ -63,7 +63,7 @@ $$
 $$
 
 $$
-\dot{e}_y = \omega_r - \omega
+\dot{e}_y = v_r \sin{e_\theta}
 $$
 
 $$
