@@ -104,21 +104,22 @@ $$
 
 Where:
 - `K_x > 0`, `K_theta > 0`, `K_y > 0` are positive controller gains.
+- These control actions make sure that $\dot{L} < 0$
 
 ## Closed-Loop Error Dynamics
 
 Substituting control inputs gives the closed-loop error dynamics:
 
 $$
-\dot{e}_x = \omega_r e_y + K_\theta e_\theta e_y + v_r K_y e_y^2 - K_x e_x
+\dot{e_x} = \omega_r e_y + K_\theta e_\theta e_y + v_r K_y e_y^2 - K_x e_x
 $$
 
 $$
-\dot{e}_y = -\omega_r e_x - K_\theta e_\theta e_x - v_r K_y e_x e_y + v_r \sin e_\theta
+\dot{e_y} = -\omega_r e_x - K_\theta e_\theta e_x - v_r K_y e_x e_y + v_r \sin e_\theta
 $$
 
 $$
-\dot{e}_\theta = -K_\theta e_\theta - v_r K_y e_y
+\dot{e_\theta} = -K_\theta e_\theta - v_r K_y e_y
 $$
 
 ## Features
