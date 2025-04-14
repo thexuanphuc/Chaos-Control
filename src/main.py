@@ -11,48 +11,48 @@ def generate_path(path_type="1"):
 
     if path_type == 1:
         # Circle
-        t = np.linspace(0, 2 * np.pi, 200)
+        t = np.linspace(0, 2 * np.pi, 150)
         x = 5 * np.cos(t)
         y = 5 * np.sin(t)
     elif path_type == 2:
         # Ellipse
-        t = np.linspace(0, 2 * np.pi, 200)
+        t = np.linspace(0, 2 * np.pi, 150)
         x = 6 * np.cos(t)
         y = 4 * np.sin(t)
     elif path_type == 3:
         # Spiral
-        t = np.linspace(0, 4 * np.pi, 200)
+        t = np.linspace(0, 4 * np.pi, 150)
         x = t * np.cos(t)
         y = t * np.sin(t)
     elif path_type == 4:
         # Line
-        x = np.linspace(0, 10, 200)
+        x = np.linspace(0, 10, 150)
         y = 2 * x
     elif path_type == 5:
         # Lemniscate (Figure-eight)
-        t = np.linspace(0, 5 * np.pi, 200)
+        t = np.linspace(0, 5 * np.pi, 150)
         x = 5 * np.sin(t)
         y = 5 * np.sin(t) * np.cos(t)
     elif path_type == 6:
         # Sine wave
-        x = np.linspace(0, 10, 200)
+        x = np.linspace(0, 10, 150)
         y = 5 * np.sin(x)
     elif path_type == 7:
         # Heart shape
-        t = np.linspace(0, 2 * np.pi, 200)
+        t = np.linspace(0, 2 * np.pi, 150)
         x = 16 * np.sin(t)**3
         y = 13 * np.cos(t) - 5 * np.cos(2 * t) - 2 * np.cos(3 * t) - np.cos(4 * t)
     elif path_type == 8:
         # Square wave-like path
-        x = np.linspace(0, 10, 200)
+        x = np.linspace(0, 10, 150)
         y = np.sign(np.sin(2 * np.pi * x / 2))
     elif path_type == 9:
         # Parabola
-        x = np.linspace(-5, 5, 200)
+        x = np.linspace(-5, 5, 150)
         y = x**2
     elif path_type == 10:
         # Super complicated path (combination of sine wave and spiral)
-        t = np.linspace(0, 4 * np.pi, 200)
+        t = np.linspace(0, 4 * np.pi, 150)
         x = t * np.cos(t) + 5 * np.sin(2 * t)
         y = t * np.sin(t) + 5 * np.cos(2 * t)
 
@@ -73,7 +73,7 @@ def main():
     dt = 0.01  # Time stepq
     wheel_radius = 0.1
     wheel_width = 0.5
-    k_forward = 5.0
+    k_forward = 8.0
     k_theta = 3.5
     max_steps = 1000
     v_max = 10.0

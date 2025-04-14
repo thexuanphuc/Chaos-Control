@@ -29,14 +29,13 @@ class LyaponovEnergyBasedController(Controller):
         self.ktt = k_theta
         self.predefind_path = predefind_path
         # self.v_forward_reference = None
-        # self.omega_reference = None
         self.wheel_width = wheel_width 
         self.wheel_radius = wheel_radius
         self.v_max = v_max
         self.omega_max = omega_max
         #  TODO turn parameters
         self.v_f = v_max
-        self.omega_f = 0.0
+        self.omega_f = None
         self.dt = dt
         self.closest_index = 0
         self.previous_cmd = (0, 0)
@@ -60,17 +59,28 @@ class LyaponovEnergyBasedController(Controller):
             start_index = max(0, self.closest_index - 6)
             end_index = min(len(predefind_path), self.closest_index + 6)
             distances = np.linalg.norm(predefind_path[start_index:end_index] - np.array([x, y]), axis=1)
-            self.closest_index = start_index + np.argmin(distances) + 1
-            if self.closest_index == len(predefind_path):
-                return 0, 0
-            else:
+            self.closest_index = start_index + np.argmin(distances)
+            if self.closest_index == len(predefind_path) - 1:
+                return (0, 0)
+            elif self.closest_index == len(predefind_path) - 2:
                 next_point = predefind_path[self.closest_index + 1]
+                theta_d = np.arctan2(next_point[1] - y, next_point[0] - x)
+                self.omega_f = 0
+            else:
+                # find trajectory from pure pursuit https://www.youtube.com/watch?v=qYR7mmcwT2w
+                next_2_point = predefind_path[self.closest_index + 2]
+                next_point = predefind_path[self.closest_index + 1]
+                theta_d = np.arctan2(next_2_point[1] - next_point[1], next_2_point[0] - next_point[0]) 
 
+                L = np.linalg.norm(next_point - np.array([x, y]))
+                curvature_radius_inv = np.sin(0.5 * (theta_d - theta)) * L
+                self.omega_f = curvature_radius_inv * 50
+                self.v_f = self.v_max * np.abs(curvature_radius_inv) / (self.omega_max)
             theta_d = np.arctan2(next_point[1] - y, next_point[0] - x)
             x_d, y_d = next_point
 
-            print("the desired point is ", x_d, y_d, "the desired angle is ", theta_d)
-            print("the current point is ", x, y, "the current angle is ", theta)
+            # print("the desired point is ", x_d, y_d, "the desired angle is ", theta_d)
+            # print("the current point is ", x, y, "the current angle is ", theta)
             # Compute the error in position
             error_x = x_d - x
             error_y = y_d - y
@@ -85,9 +95,7 @@ class LyaponovEnergyBasedController(Controller):
             error_theta = error_theta
 
             # Compute the control commands
-            #  TODO : use the reference velocity, not just constant values
-            # forward_velocity = self.v_forward_reference[closest_index] * np.cos(error_theta) + self.kf * error_forward
-            # angular_velocity = self.omega_reference[closest_index] + self.ktt * error_theta + self.v_forward_reference[closest_index] * error_lateral * np.sin(error_theta) / error_theta
+            #  TODO : should we vary the forward velocity?
             forward_velocity = self.v_f * np.cos(error_theta) + self.kf * error_forward
             angular_velocity = self.omega_f + self.ktt * error_theta + self.v_f * error_lateral * np.sin(error_theta) / error_theta
             
