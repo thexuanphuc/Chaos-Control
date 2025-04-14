@@ -64,6 +64,7 @@ $$
 $$
 \dot{e}_y = -\omega e_x + v_r \sin{e_\theta}
 $$
+
 $$
 \dot{e}_\theta = \omega_r - \omega
 $$
