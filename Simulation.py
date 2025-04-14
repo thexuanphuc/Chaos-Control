@@ -8,34 +8,35 @@ class Simulation:
         Initialize the map with a desired path.
         :param desired_path: A numpy array of shape (N, 2) representing the desired path.
         """
+
         self.desired_path = desired_path
         self.wheel_radius = wheel_radius
         self.wheel_width = wheel_width
         self.dt = 0.1
         self.x, self.y, self.theta = intial_pose
+        self.actual_path = np.array([[self.x, self.y]])  # Initialize actual path with the first position
 
         # Create a figure and axis for the plot
         self.fig, self.ax = plt.subplots()
         self.ax.plot(self.desired_path[:, 0], self.desired_path[:, 1], 'r--', label="Desired Path")
-        self.ax.set_xlim(-8, 8)
-        self.ax.set_ylim(-8, 8)
+        self.ax.plot(self.actual_path[:, 0], self.actual_path[:, 1], 'g-', label="Actual Path")
         self.ax.set_aspect('equal', adjustable='box')
         self.ax.set_xlabel("X")
         self.ax.set_ylabel("Y")
         self.ax.legend()
         self.ax.grid()
-        plt.ion()  # Turn on interactive mode
+        plt.ion()
 
     def plot_robot(self):
         """
         Plot the robot's position and orientation on the map.
         """
+        self.actual_path = np.append(self.actual_path, [[self.x, self.y]], axis=0)  # Append the current position to the actual path
         # Clear the plot
         self.ax.clear()
-        self.ax.set_xlim(-8, 8)
-        self.ax.set_ylim(-8, 8)
         # Plot the desired path
         self.ax.plot(self.desired_path[:, 0], self.desired_path[:, 1], 'r--', label="Desired Path")
+        self.ax.plot(self.actual_path[:, 0], self.actual_path[:, 1], 'g-', label="Actual Path")
 
         # Plot the robot's position
         self.ax.plot(self.x, self.y, 'bo', label="Robot Position")
@@ -45,7 +46,7 @@ class Simulation:
         self.ax.arrow(self.x, self.y, arrow_length * np.cos(self.theta), arrow_length * np.sin(self.theta),
                       head_width=0.1, head_length=0.2, fc='blue', ec='blue', label="Orientation")
 
-        plt.pause(0.001)
+        plt.pause(0.0000000001)
 
     def execute_cmd(self, left_wheel_velocity, right_wheel_velocity):
         """
@@ -60,8 +61,8 @@ class Simulation:
 
         print("executing command")
         # Calculate the robot's linear and angular velocities
-        forward_velocity = (left_wheel_velocity + right_wheel_velocity) / 2
-        angular_velocity_z = (right_wheel_velocity - left_wheel_velocity) / self.wheel_width
+        forward_velocity = (left_wheel_velocity + right_wheel_velocity) * self.wheel_width / 2
+        angular_velocity_z = (right_wheel_velocity - left_wheel_velocity) * self.wheel_width/ self.wheel_width
 
         # Update the robot's position and orientation
         self.x += forward_velocity * np.cos(self.theta) * self.dt
