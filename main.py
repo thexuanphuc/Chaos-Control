@@ -42,10 +42,10 @@ def main():
         current_state = simulation.get_robot_state()
 
         # Compute control commands
-        left_wheel_velocity, right_wheel_velocity = controller.compute_control(current_state, desired_path)
+        omega_left_wheel, omega_right_wheel = controller.compute_control(current_state, desired_path)
 
         # Update the robot state
-        robot_state = simulation.execute_cmd(left_wheel_velocity, right_wheel_velocity)
+        robot_state = simulation.execute_cmd(omega_left_wheel, omega_right_wheel)
 
         # Plot the robot
         simulation.plot_robot()
