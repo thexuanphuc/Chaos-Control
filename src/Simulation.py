@@ -29,9 +29,8 @@ class Simulation:
         :return: Updated robot state (x, y, theta).
         """
         # Calculate the robot's linear and angular velocities
-        forward_velocity = (left_wheel_velocity + right_wheel_velocity) * self.wheel_width / 2
-        angular_velocity_z = (right_wheel_velocity - left_wheel_velocity) * self.wheel_width/ self.wheel_width
-
+        forward_velocity = (left_wheel_velocity + right_wheel_velocity) * self.wheel_radius / 2
+        angular_velocity_z = (right_wheel_velocity - left_wheel_velocity) * self.wheel_radius/ self.wheel_width
         # Update the robot's position and orientation
         self.x += forward_velocity * np.cos(self.theta) * self.dt
         self.y += forward_velocity * np.sin(self.theta) * self.dt
