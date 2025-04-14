@@ -57,13 +57,18 @@ Where `(x_r, y_r, theta_r)` is the desired/reference trajectory.
 
 The error dynamics of the system are given by:
 
+
 $$
-\begin{align*}
-\dot{e}_x &= \omega e_y - v + v_r \cos{e_\theta} \\
-\dot{e}_y &= -\omega e_x + v_r \sin{e_\theta} \\
-\dot{e}_\theta &= \omega_r - \omega
-\end{align*}
+\dot{e}_x = \omega e_y - v + v_r \cos{e_\theta}
+$$\\
 $$
+\dot{e}_y = -\omega e_x + v_r \sin{e_\theta}
+$$
+
+$$
+\dot{e}_\theta = \omega_r - \omega
+$$
+
 
 ## Candidate Lyapunov Function
 
