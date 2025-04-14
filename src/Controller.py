@@ -57,8 +57,10 @@ class LyaponovEnergyBasedController(Controller):
 
             # TODO implement better tracking stratergy
             # Find the closest point on the predefined path
-            distances = np.linalg.norm(predefind_path - np.array([x, y]), axis=1)
-            self.closest_index = np.argmin(distances) + 1
+            start_index = max(0, self.closest_index - 6)
+            end_index = min(len(predefind_path), self.closest_index + 6)
+            distances = np.linalg.norm(predefind_path[start_index:end_index] - np.array([x, y]), axis=1)
+            self.closest_index = start_index + np.argmin(distances) + 1
             if self.closest_index == len(predefind_path):
                 return 0, 0
             else:
@@ -104,5 +106,4 @@ class LyaponovEnergyBasedController(Controller):
             self.previous_cmd = (omega_left, omega_right)
             self.previous_time_stamp = time.time_ns()
 
-            print(f" the wheel velocities is v_left: {v_left}, v_right: {v_right}")
             return omega_left, omega_right
