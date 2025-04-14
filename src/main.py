@@ -57,7 +57,7 @@ def generate_path(path_type="1"):
 
 def main():
     # Generate the desired path
-    desired_path = generate_path(7)
+    desired_path = generate_path(5)
 
     # Initial robot state (x, y, theta)
     robot_state = desired_path[0] + np.array([0.1, 0.1])
@@ -88,10 +88,6 @@ def main():
 
         # Update the robot state
         robot_state = simulation.execute_cmd(omega_left_wheel, omega_right_wheel)
-
-        # Plot the robot
-        simulation.plot_robot()
-        simulation.show()
 
 
 if __name__ == "__main__":

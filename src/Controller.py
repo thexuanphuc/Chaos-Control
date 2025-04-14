@@ -17,7 +17,6 @@ class Controller:
         """
         raise NotImplementedError("This method should be implemented by subclasses.")
 
-
 class LyaponovEnergyBasedController(Controller):
     def __init__(self, dt, k_forward=1.0, k_theta=2.0, predefind_path=None, wheel_width=0.5, wheel_radius = 0.1, v_max=1.0, omega_max=1.0):
         """
