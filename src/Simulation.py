@@ -58,8 +58,6 @@ class Simulation:
         :param wheel_distance: Distance between the two wheels.
         :return: Updated robot state (x, y, theta).
         """
-
-        print("executing command")
         # Calculate the robot's linear and angular velocities
         forward_velocity = (left_wheel_velocity + right_wheel_velocity) * self.wheel_width / 2
         angular_velocity_z = (right_wheel_velocity - left_wheel_velocity) * self.wheel_width/ self.wheel_width
