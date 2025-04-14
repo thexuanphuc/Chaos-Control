@@ -13,9 +13,7 @@ This repository implements a Lyapunov Energy-Based Controller for trajectory tra
 - [Candidate Lyapunov Function](#candidate-lyapunov-function)
 - [Lyapunov-Based Control Law](#lyapunov-based-control-law)
 - [Closed-Loop Error Dynamics](#closed-loop-error-dynamics)
-- [Features](#features)
 - [Usage](#usage)
-- [Dependencies](#dependencies)
 - [License](#license)
 
 ## Robot Kinematic Model
@@ -122,20 +120,12 @@ $$
 \dot{e_\theta} = -K_\theta e_\theta - v_r K_y e_y
 $$
 
-## Features
-
-- Lyapunov-based globally asymptotically stable control law.
-- Trajectory tracking for nonholonomic robots.
-- Applicable to circular, spiral, or custom reference trajectories.
-- Animation and visualization using Matplotlib.
-
 ## Usage
 
 1. Clone the repository:
 
 ```bash
-git clone https://github.com/your-username/your-repo-name.git
-cd your-repo-name
+git clone https://github.com/thexuanphuc/Chaos-Control
 ```
 
 2. Modify the desired trajectory in `trajectory_generator.py`.
@@ -144,18 +134,6 @@ cd your-repo-name
 
 ```bash
 python main.py
-```
-
-## Dependencies
-
-- Python 3.x
-- Numpy
-- Matplotlib
-
-Install required packages:
-
-```bash
-pip install -r requirements.txt
 ```
 
 ## License
