@@ -67,11 +67,11 @@ def main():
     dt = 0.01  # Time stepq
     wheel_radius = 0.1
     wheel_width = 0.5
-    k_forward = 1.0
-    k_theta = 2.5
+    k_forward = 5.0
+    k_theta = 3.5
     max_steps = 1000
-    v_max = 5.0
-    omega_max = 2.5
+    v_max = 10.0
+    omega_max = 5.5
     # Initialize the simulation
     simulation = Simulation(dt, desired_path, wheel_radius, wheel_width, intial_pose=robot_state)
 
