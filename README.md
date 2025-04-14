@@ -59,7 +59,7 @@ The error dynamics of the system are given by:
 
 
 $$ 
-\dot{e_x} = \omega e_y - v + v_r \cos{e_\theta} 
+\dot{e_x} = \omega e_y - v + v_r \cos(e_\theta)
 $$
 
 $$
@@ -81,7 +81,7 @@ $$
 Derivative of Lyapunov function:
 
 $$
-\dot{L} = e_x \dot{e}_x + e_y \dot{e}_y + e_\theta \dot{e}_\theta
+\dot{L} = e_x \dot{e_x} + e_y \dot{e_y} + e_\theta \dot{e_\theta}
 $$
 
 Substitute error dynamics:
