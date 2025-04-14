@@ -81,16 +81,16 @@ class LyaponovEnergyBasedController(Controller):
         angular_velocity = self.omega_f + self.ktt * error_theta + self.v_f * error_lateral * np.sin(error_theta) / error_theta
         
         # Limit the velocities
-        # forward_velocity = np.clip(forward_velocity, -self.v_max, self.v_max)
-        # angular_velocity = np.clip(angular_velocity, -self.omega_max, self.omega_max)
+        forward_velocity = np.clip(forward_velocity, -self.v_max, self.v_max)
+        angular_velocity = np.clip(angular_velocity, -self.omega_max, self.omega_max)
 
         # calculate the wheels velocities
         v_left = forward_velocity - (self.wheel_width / 2) * angular_velocity
         v_right = forward_velocity + (self.wheel_width / 2) * angular_velocity
 
-        # calculate the wheel angular velocities
-        v_left = v_left / self.wheel_radius
-        v_right = v_right / self.wheel_radius
+        # calculate the wheel angular velocities of the wheel
+        omega_left = v_left / self.wheel_radius
+        omega_right = v_right / self.wheel_radius
 
         print(f" the wheel velocities is v_left: {v_left}, v_right: {v_right}")
-        return v_left, v_right
+        return omega_left, omega_right
