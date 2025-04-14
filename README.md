@@ -63,11 +63,11 @@ $$
 $$
 
 $$
-\dot{e}_y = -\omega e_x +  \sin (e_\theta)
+\dot{e_y} = -\omega e_x +  \sin (e_\theta)
 $$
 
 $$
-\dot{e}_\theta = \omega_r - \omega
+\dot{e_\theta} = \omega_r - \omega
 $$
 
 ## Candidate Lyapunov Function
