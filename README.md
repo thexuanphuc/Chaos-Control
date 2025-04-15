@@ -134,10 +134,10 @@ v &= v_{ref} \cos(e_\theta) + K_x e_x \\
 $$
 
 Where:
-* `v_{ref}` is the reference forward speed.
-* `omega_{ref}` is the reference angular velocity from path curvature.
-* `K_x > 0`, `K_\theta > 0`, `K_y > 0` are positive controller gains derived from parameters in `main.py`.
-* `sinc(e_\theta) = \sin(e_\theta) / e_\theta` (with `sinc(0) = 1`).
+* $v_{ref}$ is the reference forward speed.
+* $\omega_{ref}$ is the reference angular velocity from path curvature.
+* $K_x > 0$, $K_\theta > 0$, $K_y > 0$ are positive controller gains derived from parameters in `main.py`.
+* $\mathrm{sinc}(e_\theta) = \frac{\sin(e_\theta)}{e_\theta}$ (with $\mathrm{sinc}(0) = 1$).
 
 The controller then converts these target chassis velocities (`v`, `omega`) into left and right wheel angular velocity commands (`omega_left_cmd`, `omega_right_cmd`) based on the robot's wheel radius and width, which are sent to the `Simulation`.
 
@@ -151,11 +151,11 @@ The `generate_path` function in `main.py` can create various geometric paths (Ci
 
 The key controller parameters are set near the top of the `main()` function in `main.py`:
 
-* `k_forward`: Corresponds to `K_x`.
-* `k_theta`: Corresponds to `K_\theta`.
-* `k_lateral_gain_factor`: Used to determine `K_y` (`K_y = K_\theta \times k\_lateral\_gain\_factor`).
-* `v_ref`: Corresponds to `v_{ref}`.
-* `omega_max`: Maximum limit applied to the calculated chassis angular velocity `omega`.
+* `k_forward`: Corresponds to $K_x$.
+* `k_theta`: Corresponds to $K_\theta$.
+* `k_lateral_gain_factor`: Used to determine $K_y$ ($K_y = K_\theta \times k\_lateral\_gain\_factor$).
+* `v_ref`: Corresponds to $v_{ref}$.
+* `omega_max`: Maximum limit applied to the calculated chassis angular velocity $\omega$.
 * `wheel_radius`, `wheel_width`: Robot physical parameters used for simulation and control calculations.
 * `dt`: Simulation time step.
 
@@ -181,7 +181,7 @@ Running `main.py` will:
     * The robot's current position and orientation (blue circle and arrow).
     * Plots of wheel velocity commands over time.
     * Plots of the robot's actual forward and angular velocities over time.
-    * Plots of the tracking errors (`e_x`, `e_y`, `e_\theta`) over time.
+    * Plots of the tracking errors ($e_x$, $e_y$, $e_\theta$) over time.
     * A plot of the calculated Lyapunov energy function `V` over time.
 3.  Print simulation status messages to the console.
 4.  The simulation runs until `max_steps` is reached, the target is achieved, or an error occurs.
