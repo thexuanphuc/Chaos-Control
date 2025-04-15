@@ -30,7 +30,6 @@ This project implements a Lyapunov-based controller for trajectory tracking of a
   - [Controller Parameters](#controller-parameters)
 - [Usage](#usage)
 - [Output](#output)
-- [License](#license)
 
 ## Dependencies
 
