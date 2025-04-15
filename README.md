@@ -198,7 +198,7 @@ The key controller parameters are set near the top of the `main()` function in `
 
 * `k_forward`: Corresponds to $K_x$.
 * `k_theta`: Corresponds to $K_\theta$.
-* `k_lateral_gain_factor`: Used to determine $K_y$ ($K_y = K_\theta \times \texttt{k\_lateral\_gain\_factor}$).
+* `k_lateral_gain_factor`: Used to determine $K_y$ ($K_y = K_{\theta} \times k_{lateral-gain-factor}$).
 * `v_ref`: Corresponds to $v_{ref}$.
 * `omega_max`: Maximum limit applied to the calculated chassis angular velocity $\omega$.
 * `wheel_radius`, `wheel_width`: Robot physical parameters used for simulation and control calculations.
