@@ -103,7 +103,7 @@ e_\theta &= \theta_d - \theta \quad &\text{(Orientation error)}
 \end{aligned}
 $$
 
-Where `(x, y, theta)` is the robot's current state. `e_\theta` is normalized to `[-pi, pi]`. These correspond to `error_forward`, `error_lateral`, and `error_theta` calculated in `Controller.py`.
+Where `(x, y, theta)` is the robot's current state. $e_\theta$ is normalized to $[-\pi, \pi]$. These correspond to `error_forward`, `error_lateral`, and `error_theta` calculated in `Controller.py`.
 
 ## Control Strategy
 
@@ -181,7 +181,7 @@ Running `main.py` will:
     * Plots of wheel velocity commands over time.
     * Plots of the robot's actual forward and angular velocities over time.
     * Plots of the tracking errors ($e_x$, $e_y$, $e_\theta$) over time.
-    * A plot of the calculated Lyapunov energy function `V` over time.
+    * A plot of the calculated Lyapunov energy function $V$ over time.
 3.  Print simulation status messages to the console.
 4.  The simulation runs until `max_steps` is reached, the target is achieved, or an error occurs.
 5.  **Close the Matplotlib plot window to terminate the program** after the simulation finishes.
