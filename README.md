@@ -1,6 +1,6 @@
 # Lyapunov-Based Controller for Nonholonomic Mobile Robot
 
-This project implements a Lyapunov-based controller for trajectory tracking of a nonholonomic mobile robot (modeled as a unicycle). The simulation runs using Python scripts and displays results in a live Matplotlib window.
+This project implements a Lyapunov-based controller for trajectory tracking of a nonholonomic mobile robot. The simulation runs using Python scripts and displays results in a live Matplotlib window.
 
 <div align="center">
     <img src="media/robot_animation_Heart.gif" alt="Heart Trajectory" width="400">
