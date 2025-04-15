@@ -113,10 +113,10 @@ The controller aims to drive the tracking errors towards zero using a control la
 A common candidate Lyapunov function for this system is:
 
 $$
-V = \frac{1}{2} (e_x^2 + e_y^2) + \frac{1}{2\gamma} e_\theta^2
+V := \frac{1}{2} (e_x^2 + e_y^2 + e_\theta^2)
 $$
 
-Where `gamma` is a positive tuning parameter related to the controller gains. The goal is to design control inputs `v` and `omega` such that `dV/dt <= 0`.
+The goal is to design control inputs `v` and `omega` such that `dV/dt <= 0`.
 
 *(Note: The code calculates `V = 0.5 * (e_x**2 + e_y**2 + abs(k_theta) * e_theta**2)`).*
 
