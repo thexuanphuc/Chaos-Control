@@ -3,15 +3,15 @@
 This project implements a Lyapunov-based controller for trajectory tracking of a nonholonomic mobile robot. The simulation runs using Python scripts and displays results in a live Matplotlib window.
 
 <div align="center">
-    <img src="media/robot_animation_Heart.gif" alt="Heart Trajectory" width="400">
-    <img src="media/robot_animation_Circle.gif" alt="Circle Trajectory" width="400">
-    <img src="media/robot_animation_Complex.gif" alt="Complex Trajectory" width="400">
+    <img src="media/robot_animation_Heart.gif" alt="Heart Trajectory" width="350">
+    <img src="media/robot_animation_Circle.gif" alt="Circle Trajectory" width="350">
+    <img src="media/robot_animation_Complex.gif" alt="Complex Trajectory" width="350">
 </div>
 
 <div align="center">
-    <img src="media/robot_animation_Lemniscate.gif" alt="Lemniscate Trajectory" width="400">
-    <img src="media/robot_animation_SineWave.gif" alt="SineWave Trajectory" width="400">
-    <img src="media/robot_animation_Line.gif" alt="Line Trajectory" width="400">
+    <img src="media/robot_animation_Lemniscate.gif" alt="Lemniscate Trajectory" width="350">
+    <img src="media/robot_animation_SineWave.gif" alt="SineWave Trajectory" width="350">
+    <img src="media/robot_animation_Line.gif" alt="Line Trajectory" width="350">
 </div>
 
 
@@ -20,11 +20,11 @@ This project implements a Lyapunov-based controller for trajectory tracking of a
 - [Installation](#installation)
 - [File Structure](#file-structure)
 - [Robot Kinematic Model](#robot-kinematic-model)
-- [Path Following Strategy](#path-following-strategy)
 - [Error Definition](#error-definition)
 - [Control Strategy](#control-strategy)
   - [Candidate Lyapunov Function](#candidate-lyapunov-function)
   - [Control Law](#control-law)
+- [Path Following Strategy](#path-following-strategy)
 - [Implementation Details](#implementation-details)
   - [Path Generation](#path-generation)
   - [Controller Parameters](#controller-parameters)
@@ -41,7 +41,7 @@ This project implements a Lyapunov-based controller for trajectory tracking of a
 
 1.  Clone the repository:
     ```bash
-    git clone [https://github.com/thexuanphuc/Chaos-Control](https://github.com/thexuanphuc/Chaos-Control)
+    git clone https://github.com/thexuanphuc/Chaos-Control
     cd Chaos-Control
     ```
 
@@ -78,40 +78,6 @@ Where:
 * `omega` is the angular velocity.
 
 The `Simulation` class uses this model implicitly when converting wheel velocities (commands from the controller) into chassis motion (`v`, `omega`) and updating the state (`x`, `y`, `theta`).
-
-## Path Following Strategy
-
-This controller follows a predefined geometric path represented as a sequence of points. The strategy involves:
-
-1.  **Finding the Closest Point:** Identifying the point on the desired path closest to the robot's current position.
-2.  **Lookahead Point:** Selecting a target point (`x_d`, `y_d`) on the path slightly ahead of the closest point.
-3.  **Reference Orientation (`theta_d`):** Determining the desired orientation by calculating the angle of the path segment *following* the target point.
-4.  **Reference Velocities:**
-    * A constant reference forward speed `v_ref` is used (parameter `v_ref` in `main.py`).
-    * A reference angular velocity `omega_ref` is estimated based on the curvature of the path near the target point.
-
-## Kinematic Model of a Mobile Robot
-
-### Non-holonomic model
-
-
-The kinematic model of a mobile robot is defined as follows:
-
-$$
-\dot{x} = v \cos \theta
-$$
-
-$$
-\dot{y} = v \sin \theta
-$$
-
-$$
-\dot{\theta} = \omega
-$$
-
-where:  
-- $v$: forward velocity (control input)  
-- $\omega$: angular velocity (control input)  
 
 ### Reference Vehicle Dynamics
 
@@ -169,9 +135,18 @@ The controller aims to drive the tracking errors towards zero using a control la
 
 A common candidate Lyapunov function for this system is:
 
+$$ V := \frac{1}{2} (e_x^2 + e_y^2 +  \frac{1}{K_y}e_\theta^2) $$
+
 $$
-V := \frac{1}{2} (e_x^2 + e_y^2 + e_\theta^2)
+\dot{V} := e_x \dot{e_x} + e_y \dot{e_y} + \frac{1}{K_y}e_\theta \dot{e_\theta}
 $$
+
+Substitute error dynamics:
+
+$$
+\dot{V} := -e_x v + e_x v_r \cos e_\theta + e_y v_r \sin e_\theta + \frac{1}{K_y}(\omega_r e_\theta - \omega e_\theta)
+$$
+
 
 The goal is to design control inputs `v` and `omega` such that `dV/dt <= 0`.
 
@@ -182,19 +157,34 @@ The goal is to design control inputs `v` and `omega` such that `dV/dt <= 0`.
 The `LyapunovEnergyBasedController` implements the following control law to calculate the desired chassis velocities (`v`, `omega`):
 
 $$
-\begin{aligned}
-v &= v_{ref} \cos(e_\theta) + K_x e_x \\
-\omega &= \omega_{ref} + K_\theta e_\theta + K_y v_{ref} \mathrm{sinc}(e_\theta) e_y
-\end{aligned}
+v = v_r \cos e_\theta + K_x e_x 
+$$
+
+$$
+\omega = \omega_r + K_\theta e_\theta + v_r  e_y K_y \frac{sin{e_\theta}}{e_\theta}
 $$
 
 Where:
-* $v_{ref}$ is the reference forward speed.
-* $\omega_{ref}$ is the reference angular velocity from path curvature.
-* $K_x > 0$, $K_\theta > 0$, $K_y > 0$ are positive controller gains derived from parameters in `main.py`.
-* $\mathrm{sinc}(e_\theta) = \frac{\sin(e_\theta)}{e_\theta}$ (with $\mathrm{sinc}(0) = 1$).
+- K_x > 0, K_theta > 0, K_y > 0 are positive controller gains.
+- Based on these control actions $\dot{L} < 0$
+$$
+\dot{V} := -e_x^2 K_x - e_\theta^2 K_\theta
+$$
 
 The controller then converts these target chassis velocities (`v`, `omega`) into left and right wheel angular velocity commands (`omega_left_cmd`, `omega_right_cmd`) based on the robot's wheel radius and width, which are sent to the `Simulation`.
+
+## Path Following Strategy
+
+This controller follows a predefined geometric path represented as a sequence of points. The strategy involves:
+
+1.  **Finding the Closest Point:** Identifying the point on the desired path closest to the robot's current position.
+2.  **Lookahead Point:** Selecting a target point (`x_d`, `y_d`) on the path slightly ahead of the closest point.
+3.  **Reference Orientation (`theta_d`):** Determining the desired orientation by calculating the angle of the path segment *following* the target point.
+4.  **Reference Velocities:**
+    * A constant reference forward speed `v_ref` is used (parameter `v_ref` in `main.py`).
+    * A reference angular velocity `omega_ref` is estimated based on the curvature of the path near the target point.
+
+
 
 ## Implementation Details
 
