@@ -129,7 +129,7 @@ The `LyapunovEnergyBasedController` implements the following control law to calc
 $$
 \begin{aligned}
 v &= v_{ref} \cos(e_\theta) + K_x e_x \\
-\omega &= \omega_{ref} + K_\theta e_\theta + K_y v_{ref} \operatorname{sinc}(e_\theta) e_y
+\omega &= \omega_{ref} + K_\theta e_\theta + K_y v_{ref} \mathrm{sinc}(e_\theta) e_y
 \end{aligned}
 $$
 
