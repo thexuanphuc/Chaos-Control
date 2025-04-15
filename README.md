@@ -181,7 +181,7 @@ $$
 
 The goal is to design control inputs `v` and `omega` such that `dV/dt <= 0`.
 
-*(Note: The code calculates `V = 0.5 * (e_x**2 + e_y**2 + abs(k_theta) * e_theta**2)`).*
+*(Note: The code calculates `V = 0.5 * (e_x**2 + e_y**2 + e_theta**2)`).*
 
 ### Control Law
 
