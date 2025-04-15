@@ -186,9 +186,3 @@ Running `main.py` will:
 3.  Print simulation status messages to the console.
 4.  The simulation runs until `max_steps` is reached, the target is achieved, or an error occurs.
 5.  **Close the Matplotlib plot window to terminate the program** after the simulation finishes.
-
-## License
-
-This project is open-source and available under the [MIT License](LICENSE).
-
-*(Consider adding a LICENSE file to your repository if you haven't already)*
