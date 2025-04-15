@@ -19,9 +19,19 @@ This project implements a Lyapunov-based controller for trajectory tracking of a
 - [Dependencies](#dependencies)
 - [Installation](#installation)
 - [File Structure](#file-structure)
+- [Dependencies](#dependencies)
+- [Installation](#installation)
+- [File Structure](#file-structure)
 - [Robot Kinematic Model](#robot-kinematic-model)
 - [Path Following Strategy](#path-following-strategy)
+- [Path Following Strategy](#path-following-strategy)
 - [Error Definition](#error-definition)
+- [Control Strategy](#control-strategy)
+  - [Candidate Lyapunov Function](#candidate-lyapunov-function)
+  - [Control Law](#control-law)
+- [Implementation Details](#implementation-details)
+  - [Path Generation](#path-generation)
+  - [Controller Parameters](#controller-parameters)
 - [Control Strategy](#control-strategy)
   - [Candidate Lyapunov Function](#candidate-lyapunov-function)
   - [Control Law](#control-law)
@@ -141,6 +151,11 @@ e_x &= \cos \theta (x_d - x) + \sin \theta (y_d - y) \quad &\text{(Forward error
 e_y &= -\sin \theta (x_d - x) + \cos \theta (y_d - y) \quad &\text{(Lateral error)} \\
 e_\theta &= \theta_d - \theta \quad &\text{(Orientation error)}
 \end{aligned}
+\begin{aligned}
+e_x &= \cos \theta (x_d - x) + \sin \theta (y_d - y) \quad &\text{(Forward error)} \\
+e_y &= -\sin \theta (x_d - x) + \cos \theta (y_d - y) \quad &\text{(Lateral error)} \\
+e_\theta &= \theta_d - \theta \quad &\text{(Orientation error)}
+\end{aligned}
 $$
 
 Where `(x, y, theta)` is the robot's current state. $e_\theta$ is normalized to $[-\pi, \pi]$. These correspond to `error_forward`, `error_lateral`, and `error_theta` calculated in `Controller.py`.
@@ -173,6 +188,7 @@ The controller aims to drive the tracking errors towards zero using a control la
 
 ### Candidate Lyapunov Function
 
+A common candidate Lyapunov function for this system is:
 A common candidate Lyapunov function for this system is:
 
 $$
