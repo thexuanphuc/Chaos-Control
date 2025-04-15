@@ -150,11 +150,11 @@ Where `(x, y, theta)` is the robot's current state. $e_\theta$ is normalized to 
 The error dynamics between the reference vehicle and the follower robot in local coordinates are given by:
 
 $$
-\dot{e}_x = \omega e_y - v + v_r(t) \cos(e_\theta)
+\dot{e_x} = \omega e_y - v + v_r(t) \cos(e_\theta)
 $$
 
 $$
-\dot{e}_y = -\omega e_x + v_r(t) \sin(e_\theta)
+\dot{e_y} = -\omega e_x + v_r(t) \sin(e_\theta)
 $$
 
 $$
