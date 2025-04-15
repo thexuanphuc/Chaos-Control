@@ -14,7 +14,6 @@ This project implements a Lyapunov-based controller for trajectory tracking of a
     <img src="media/robot_animation_Line.gif" alt="Line Trajectory" width="400">
 </div>
 
-
 ## Table of Contents
 - [Dependencies](#dependencies)
 - [Installation](#installation)
@@ -33,15 +32,15 @@ This project implements a Lyapunov-based controller for trajectory tracking of a
 
 ## Dependencies
 
-* Python 3.x
-* NumPy
-* Matplotlib
+- Python 3.x
+- NumPy
+- Matplotlib
 
 ## Installation
 
 1.  Clone the repository:
     ```bash
-    git clone [https://github.com/thexuanphuc/Chaos-Control](https://github.com/thexuanphuc/Chaos-Control)
+    git clone https://github.com/thexuanphuc/Chaos-Control
     cd Chaos-Control
     ```
 
@@ -54,196 +53,130 @@ This project implements a Lyapunov-based controller for trajectory tracking of a
 
 The core logic is organized into the following files within the `src` directory:
 
-* `main.py`: The main script to run the simulation. Contains parameter settings, path generation call, simulation loop, and visualization setup.
-* `Simulation.py`: Defines the `Simulation` class, handling robot state updates based on wheel commands and storing history.
-* `Controller.py`: Defines the base `Controller` class and the `LyapunovEnergyBasedController` implementing the control logic.
-* `Visualizer.py`: Defines the `Visualizer` class, responsible for creating and updating the live Matplotlib plots during the simulation.
+- **main.py**: The main script to run the simulation. It contains parameter settings, path generation routines, the simulation loop, and visualization setup.
+- **Simulation.py**: Defines the `Simulation` class, which handles robot state updates based on wheel commands and stores simulation history.
+- **Controller.py**: Defines the base `Controller` class and the `LyapunovEnergyBasedController` that implements the control logic.
+- **Visualizer.py**: Defines the `Visualizer` class, which creates and updates the live Matplotlib plots during the simulation.
 
 ## Robot Kinematic Model
 
-The kinematic model of the unicycle-type robot is given by:
-
+The robot is modeled as a unicycle-type vehicle. Its motion is described by the following equations:
+  
 $$
 \begin{aligned}
-\dot{x} &= v \cos \theta \\
-\dot{y} &= v \sin \theta \\
-\dot{\theta} &= \omega
+\dot{x} &= v \cos \theta, \\
+\dot{y} &= v \sin \theta, \\
+\dot{\theta} &= \omega,
 \end{aligned}
 $$
 
-Where:
-* `(x, y)` is the robot's position in the world frame.
-* `theta` is the robot's orientation (angle with the world X-axis).
-* `v` is the forward linear velocity.
-* `omega` is the angular velocity.
+where  
+- $(x, y)$ is the robot's position in the world frame,  
+- $\theta$ is the robot's orientation (angle with the world X-axis),  
+- $v$ is the forward linear velocity, and  
+- $\omega$ is the angular velocity.  
 
-The `Simulation` class uses this model implicitly when converting wheel velocities (commands from the controller) into chassis motion (`v`, `omega`) and updating the state (`x`, `y`, `theta`).
+The `Simulation` class uses these equations to convert wheel velocities (commands from the controller) into chassis motion and update the robot state.
 
 ## Path Following Strategy
 
-This controller follows a predefined geometric path represented as a sequence of points. The strategy involves:
+The controller follows a predefined geometric path represented as a sequence of points. Its steps are:
 
-1.  **Finding the Closest Point:** Identifying the point on the desired path closest to the robot's current position.
-2.  **Lookahead Point:** Selecting a target point (`x_d`, `y_d`) on the path slightly ahead of the closest point.
-3.  **Reference Orientation (`theta_d`):** Determining the desired orientation by calculating the angle of the path segment *following* the target point.
-4.  **Reference Velocities:**
-    * A constant reference forward speed `v_ref` is used (parameter `v_ref` in `main.py`).
-    * A reference angular velocity `omega_ref` is estimated based on the curvature of the path near the target point.
+1. **Closest Point:** Identify the point on the desired path closest to the robot's current position.
+2. **Lookahead Point:** Select a target point $(x_d, y_d)$ on the path slightly ahead of the closest point.
+3. **Reference Orientation:** Compute the desired orientation $\theta_d$ from the path segment following the target point.
+4. **Reference Velocities:**  
+   - Use a constant reference forward speed $v_{ref}$ (set in `main.py`).  
+   - Estimate a reference angular velocity $\omega_{ref}$ based on the curvature of the path near the target.
 
-## Kinematic Model of a Mobile Robot
+## Error Definition
 
-### Non-holonomic model
-
-
-The kinematic model of a mobile robot is defined as follows:
-
-$$
-\dot{x} = v \cos \theta
-$$
-
-$$
-\dot{y} = v \sin \theta
-$$
-
-$$
-\dot{\theta} = \omega
-$$
-
-where:  
-- $v$: forward velocity (control input)  
-- $\omega$: angular velocity (control input)  
-
-### Reference Vehicle Dynamics
-
-The tracking control problem involves following a reference vehicle with dynamics:
-
-$$
-\dot{x}_r = v_r \cos \theta_r
-$$
-
-$$
-\dot{y}_r = v_r \sin \theta_r
-$$
-
-$$
-\dot{\theta}_r = \omega_r
-$$
-
-where $v_r(t)$ and $\omega_r(t)$ are the velocity references.
-The tracking error is defined relative to the **lookahead point** (`x_d`, `y_d`) and the **reference orientation** (`theta_d`). The errors are expressed in the robot's body frame:
-
-### Error Definition in Local Coordinates
-
+The tracking error is defined relative to the **lookahead point** $(x_d, y_d)$ and the **reference orientation** $\theta_d$. Expressed in the robot's body frame, the errors are:
 
 $$
 \begin{aligned}
-e_x &= \cos \theta (x_d - x) + \sin \theta (y_d - y) \quad &\text{(Forward error)} \\
-e_y &= -\sin \theta (x_d - x) + \cos \theta (y_d - y) \quad &\text{(Lateral error)} \\
-e_\theta &= \theta_d - \theta \quad &\text{(Orientation error)}
+e_x &= \cos \theta\, (x_d - x) + \sin \theta\, (y_d - y) \quad &\text{(Forward error)}, \\
+e_y &= -\sin \theta\, (x_d - x) + \cos \theta\, (y_d - y) \quad &\text{(Lateral error)}, \\
+e_\theta &= \theta_d - \theta \quad &\text{(Orientation error)}.
 \end{aligned}
 $$
 
-Where `(x, y, theta)` is the robot's current state. $e_\theta$ is normalized to $[-\pi, \pi]$. These correspond to `error_forward`, `error_lateral`, and `error_theta` calculated in `Controller.py`.
-
-### Error Dynamics in Local Coordinates
-
-The error dynamics between the reference vehicle and the follower robot in local coordinates are given by:
-
-<!-- 1. Forward error dynamics: -->
-
-$$
-\dot{e}_x = \omega e_y - v + v_r(t) \cos(e_\theta)
-$$
-
-<!-- 2. Lateral error dynamics: -->
-
-$$
-\dot{e}_y = -\omega e_x + v_r(t) \sin(e_\theta)
-$$
-
-<!-- 3. Angular error dynamics: -->
-
-$$
-\dot{e}_\theta = \omega_r(t) - \omega
-$$
+The orientation error $e_\theta$ is normalized to the range $[-\pi, \pi]$. These errors correspond to `error_forward`, `error_lateral`, and `error_theta` used in `Controller.py`.
 
 ## Control Strategy
 
-The controller aims to drive the tracking errors towards zero using a control law derived from Lyapunov stability principles.
+The controller is designed to drive the tracking errors to zero using Lyapunov stability principles.
 
 ### Candidate Lyapunov Function
 
-A common candidate Lyapunov function for this system is:
+A common candidate Lyapunov function is defined as:
 
 $$
-V := \frac{1}{2} (e_x^2 + e_y^2 + e_\theta^2)
+V := \frac{1}{2} \left(e_x^2 + e_y^2 + e_\theta^2\right).
 $$
 
-The goal is to design control inputs `v` and `omega` such that `dV/dt <= 0`.
+The goal is to design control inputs $v$ and $\omega$ such that $\frac{dV}{dt} \leq 0$.
 
-*(Note: The code calculates `V = 0.5 * (e_x**2 + e_y**2 + e_theta**2)`).*
+*(Note: The code calculates `V = 0.5 * (e_x**2 + e_y**2 + e_theta**2)`.)*
 
 ### Control Law
 
-The `LyapunovEnergyBasedController` implements the following control law to calculate the desired chassis velocities (`v`, `omega`):
+The `LyapunovEnergyBasedController` computes the desired chassis velocities as follows:
 
 $$
 \begin{aligned}
-v &= v_{ref} \cos(e_\theta) + K_x e_x \\
-\omega &= \omega_{ref} + K_\theta e_\theta + K_y v_{ref} \mathrm{sinc}(e_\theta) e_y
+v &= v_{ref} \cos(e_\theta) + K_x\, e_x, \\
+\omega &= \omega_{ref} + K_\theta\, e_\theta + K_y\, v_{ref}\, \mathrm{sinc}(e_\theta)\, e_y,
 \end{aligned}
 $$
 
-Where:
-* $v_{ref}$ is the reference forward speed.
-* $\omega_{ref}$ is the reference angular velocity from path curvature.
-* $K_x > 0$, $K_\theta > 0$, $K_y > 0$ are positive controller gains derived from parameters in `main.py`.
-* $\mathrm{sinc}(e_\theta) = \frac{\sin(e_\theta)}{e_\theta}$ (with $\mathrm{sinc}(0) = 1$).
+where  
+- $v_{ref}$ is the reference forward speed,  
+- $\omega_{ref}$ is the reference angular velocity derived from path curvature,  
+- $K_x > 0$, $K_\theta > 0$, and $K_y > 0$ are positive controller gains, and  
+- $\mathrm{sinc}(e_\theta) = \dfrac{\sin(e_\theta)}{e_\theta}$ with $\mathrm{sinc}(0) = 1$.  
 
-The controller then converts these target chassis velocities (`v`, `omega`) into left and right wheel angular velocity commands (`omega_left_cmd`, `omega_right_cmd`) based on the robot's wheel radius and width, which are sent to the `Simulation`.
+These target chassis velocities are then converted to left and right wheel angular velocity commands based on the robot's physical parameters.
 
 ## Implementation Details
 
 ### Path Generation
 
-The `generate_path` function in `main.py` can create various geometric paths (Circle, Ellipse, Spiral, Line, etc.). You select the desired path type using the `selected_path_type` variable in `main.py`.
+The function `generate_path` in `main.py` generates various geometric paths (Circle, Ellipse, Spiral, Line, etc.). You select the desired path type via the `selected_path_type` variable.
 
 ### Controller Parameters
 
-The key controller parameters are set near the top of the `main()` function in `main.py`:
+The main controller parameters (set near the top of `main.py`) include:
 
-* `k_forward`: Corresponds to $K_x$.
-* `k_theta`: Corresponds to $K_\theta$.
-* `k_lateral_gain_factor`: Used to determine $K_y$ ($K_y = K_\theta \times k\_lateral\_gain\_factor$).
-* `v_ref`: Corresponds to $v_{ref}$.
-* `omega_max`: Maximum limit applied to the calculated chassis angular velocity $\omega$.
-* `wheel_radius`, `wheel_width`: Robot physical parameters used for simulation and control calculations.
-* `dt`: Simulation time step.
+- `k_forward`: Corresponds to $K_x$.
+- `k_theta`: Corresponds to $K_\theta$.
+- `k_lateral_gain_factor`: Determines $K_y$ via $K_y = K_\theta \times \texttt{k\_lateral\_gain\_factor}$.
+- `v_ref`: Corresponds to $v_{ref}$.
+- `omega_max`: Maximum limit applied to the computed chassis angular velocity $\omega$.
+- `wheel_radius`, `wheel_width`: Physical parameters used for simulation and control calculations.
+- `dt`: Simulation time step.
 
 ## Usage
 
-1.  Ensure you have installed the dependencies (`numpy`, `matplotlib`).
-2.  Clone the repository and navigate into the project directory.
-3.  Modify simulation parameters, path type (`selected_path_type`), and controller gains directly within the `main.py` file (inside the `src` directory).
-4.  Run the simulation from the terminal (ensure your terminal's working directory is the one *containing* the `src` folder):
+1. Ensure that the required dependencies (`numpy`, `matplotlib`) are installed.
+2. Clone the repository and navigate to the project directory.
+3. Modify simulation parameters, path type (using `selected_path_type`), and controller gains within `main.py` as desired.
+4. Run the simulation from the terminal (ensure the working directory contains the `src` folder):
     ```bash
     python src/main.py
     ```
-    (Or navigate *into* the `src` directory and run `python main.py`).
+    You can also navigate into the `src` folder and run:
+    ```bash
+    python main.py
+    ```
 
 ## Output
 
 Running `main.py` will:
 
-1.  Open a Matplotlib window.
-2.  Display the simulation live, showing:
-    * The desired path (dashed red line).
-    * The robot's actual path (solid green line).
-    * The robot's current position and orientation (blue circle and arrow).
-    * Plots of wheel velocity commands over time.
-    * Plots of the robot's actual forward and angular velocities over time.
-    * Plots of the tracking errors ($e_x$, $e_y$, $e_\theta$) over time.
-    * A plot of the calculated Lyapunov energy function $V$ over time.
-3.  Print simulation status messages to the console.
-4.  The simulation runs until `max_steps` is reached, the target is achieved, or an error occurs.
-5.  **Close the Matplotlib plot window to terminate the program** after the simulation finishes.
+1. Open a Matplotlib window showing the live simulation.
+2. Display the desired path (e.g., dashed red line) and the actual robot path (e.g., solid green line) with the current position and orientation indicated.
+3. Plot the wheel velocity commands, forward and angular velocities over time.
+4. Plot the tracking errors ($e_x$, $e_y$, $e_\theta$) and the Lyapunov energy function $V$ over time.
+5. Print simulation status messages to the console.
+6. Terminate when the simulation completes (based on `max_steps`, reaching the target, or an error). Close the Matplotlib window to exit the program.
