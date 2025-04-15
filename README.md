@@ -45,7 +45,6 @@ This project implements a Lyapunov-based controller for trajectory tracking of a
     git clone [https://github.com/thexuanphuc/Chaos-Control](https://github.com/thexuanphuc/Chaos-Control)
     cd Chaos-Control
     ```
-    *(Note: Replace URL if your repository location is different)*
 
 2.  Install the required Python libraries:
     ```bash
