@@ -91,9 +91,50 @@ This controller follows a predefined geometric path represented as a sequence of
     * A constant reference forward speed `v_ref` is used (parameter `v_ref` in `main.py`).
     * A reference angular velocity `omega_ref` is estimated based on the curvature of the path near the target point.
 
-## Error Definition
+## Kinematic Model of a Mobile Robot
 
+### Non-holonomic model
+
+
+The kinematic model of a mobile robot is defined as follows:
+
+$$
+\dot{x} = v \cos \theta
+$$
+
+$$
+\dot{y} = v \sin \theta
+$$
+
+$$
+\dot{\theta} = \omega
+$$
+
+where:  
+- $v$: forward velocity (control input)  
+- $\omega$: angular velocity (control input)  
+
+### Reference Vehicle Dynamics
+
+The tracking control problem involves following a reference vehicle with dynamics:
+
+$$
+\dot{x}_r = v_r \cos \theta_r
+$$
+
+$$
+\dot{y}_r = v_r \sin \theta_r
+$$
+
+$$
+\dot{\theta}_r = \omega_r
+$$
+
+where $v_r(t)$ and $\omega_r(t)$ are the velocity references.
 The tracking error is defined relative to the **lookahead point** (`x_d`, `y_d`) and the **reference orientation** (`theta_d`). The errors are expressed in the robot's body frame:
+
+### Error Definition in Local Coordinates
+
 
 $$
 \begin{aligned}
@@ -104,6 +145,28 @@ e_\theta &= \theta_d - \theta \quad &\text{(Orientation error)}
 $$
 
 Where `(x, y, theta)` is the robot's current state. $e_\theta$ is normalized to $[-\pi, \pi]$. These correspond to `error_forward`, `error_lateral`, and `error_theta` calculated in `Controller.py`.
+
+### Error Dynamics in Local Coordinates
+
+The error dynamics between the reference vehicle and the follower robot in local coordinates are given by:
+
+<!-- 1. Forward error dynamics: -->
+
+$$
+\dot{e}_x = \omega e_y - v + v_r(t) \cos(e_\theta)
+$$
+
+<!-- 2. Lateral error dynamics: -->
+
+$$
+\dot{e}_y = -\omega e_x + v_r(t) \sin(e_\theta)
+$$
+
+<!-- 3. Angular error dynamics: -->
+
+$$
+\dot{e}_\theta = \omega_r(t) - \omega
+$$
 
 ## Control Strategy
 
