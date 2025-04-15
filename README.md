@@ -2,6 +2,19 @@
 
 This project implements a Lyapunov-based controller for trajectory tracking of a nonholonomic mobile robot (modeled as a unicycle). The simulation runs using Python scripts and displays results in a live Matplotlib window.
 
+<div align="center">
+    <img src="media/robot_animation_Heart.gif" alt="Heart Trajectory" width="400">
+    <img src="media/robot_animation_Circle.gif" alt="Circle Trajectory" width="400">
+    <img src="media/robot_animation_Complex.gif" alt="Complex Trajectory" width="400">
+</div>
+
+<div align="center">
+    <img src="media/robot_animation_Lemniscate.gif" alt="Lemniscate Trajectory" width="400">
+    <img src="media/robot_animation_SineWave.gif" alt="SineWave Trajectory" width="400">
+    <img src="media/robot_animation_Line.gif" alt="Line Trajectory" width="400">
+</div>
+
+
 ## Table of Contents
 - [Dependencies](#dependencies)
 - [Installation](#installation)
