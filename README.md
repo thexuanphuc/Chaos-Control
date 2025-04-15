@@ -167,9 +167,8 @@ $$
 Where:
 - K_x > 0, K_theta > 0, K_y > 0 are positive controller gains.
 - Based on these control actions $\dot{L} < 0$
-<!-- $$
-\dot{V} := -K_x e_x^2 - K_\theta e_\theta^2
-$$ -->
+
+
 $$ \dot{V} := -K_x e_x^2 - K_\theta e_\theta^2 $$
 
 The controller then converts these target chassis velocities (`v`, `omega`) into left and right wheel angular velocity commands (`omega_left_cmd`, `omega_right_cmd`) based on the robot's wheel radius and width, which are sent to the `Simulation`.
