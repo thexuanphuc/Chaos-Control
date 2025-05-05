@@ -5,7 +5,13 @@ class Simulation:
     def __init__(self, dt, desired_path, wheel_radius, wheel_width,
                  m, I, dB=0.0, # Dynamic parameters: mass, inertia, disturbance bound
                  initial_pose=np.array([0.0, 0.0, 0.0]),
-                 initial_velocity=np.array([0.0, 0.0])): # v1, omega
+                 initial_velocity=np.array([0.0, 0.0]), # v1, omega
+                 # --- New/Modified parameters for trajectory-based kick ---
+                 kick_path_target_index=None, # Index on desired_path to trigger near (e.g., 50)
+                 kick_path_trigger_distance=0.5, # How close robot must be to path point (m)
+                 kick_duration=0.1,       # How long the kick force is applied *after triggering* (s)
+                 kick_magnitude=np.array([0.0, 0.0]) # Effective torque [v1_disturbance, omega_disturbance]
+                 ):
         """
         Initialize the simulation with dynamic model.
         :param dt: Time step duration.
@@ -14,9 +20,13 @@ class Simulation:
         :param wheel_width: Distance between the wheels (W).
         :param m: Mass of the robot.
         :param I: Moment of inertia of the robot around center.
-        :param dB: Upper bound for disturbance torque magnitude (optional).
+        :param dB: Upper bound for continuous disturbance torque magnitude (optional).
         :param initial_pose: Initial pose (x, y, theta).
         :param initial_velocity: Initial velocity (v1, omega).
+        :param kick_path_target_index: Index of the point on desired_path to trigger the kick near. None to disable.
+        :param kick_path_trigger_distance: Distance (m) the robot must be within the target path point to trigger.
+        :param kick_duration: Duration (seconds) the kick disturbance is applied after triggering.
+        :param kick_magnitude: Numpy array [tau_d_v1, tau_d_omega] representing the effective kick torque.
         """
         self.desired_path = desired_path
         self.wheel_radius = wheel_radius # r
@@ -26,14 +36,10 @@ class Simulation:
         # Dynamic Parameters
         self.m = m
         self.I = I
-        self.dB = dB # Max disturbance torque (applied component-wise to v_dot eq)
-        # Check for zero mass or inertia
-        if m <= 0 or I <= 0:
-             raise ValueError("Mass and Inertia must be positive.")
-        self.M_inv = np.linalg.inv(np.diag([m, I])) # Inverse of Mass Matrix M2
-        # Input Matrix B2, mapping tau=[tau_r, tau_l]^T to accelerations
-        if wheel_radius <= 0:
-             raise ValueError("Wheel radius must be positive.")
+        self.dB = dB # Continuous disturbance bound
+        if m <= 0 or I <= 0: raise ValueError("Mass and Inertia must be positive.")
+        self.M_inv = np.linalg.inv(np.diag([m, I]))
+        if wheel_radius <= 0: raise ValueError("Wheel radius must be positive.")
         self.B2 = (1.0 / self.wheel_radius) * np.array([
             [1.0, 1.0],
             [self.wheel_width / 2.0, -self.wheel_width / 2.0]
@@ -41,21 +47,71 @@ class Simulation:
 
         # State variables
         self.x, self.y, self.theta = initial_pose
-        self.v1, self.omega = initial_velocity # Forward and angular velocity
+        self.v1, self.omega = initial_velocity
 
-        # History Storage (Initialize with initial state/zeros consistent with time=0)
-        self.actual_path = np.array([[self.x, self.y, self.theta]])  # Store pose (t=0)
+        # History Storage
+        self.actual_path = np.array([[self.x, self.y, self.theta]])
         self.time_stamps = [0.0]
-        self.torques_cmd = [(0.0, 0.0)] # Command applied *during* interval ending at t=0 (None) -> Use placeholder? Length N+1
-        self.robot_velocities_actual = [initial_velocity.tolist()] # (v1, omega) at t=0
-        self.robot_accelerations_actual = [(0.0, 0.0)] # Accel calculated during step k, affects state k+1. Start with 0. Length N+1
-        self.disturbances_actual = [(0.0, 0.0)] # Disturbance during step k. Start with 0. Length N+1
+        self.torques_cmd = [(0.0, 0.0)]
+        self.robot_velocities_actual = [initial_velocity.tolist()]
+        self.robot_accelerations_actual = [(0.0, 0.0)]
+        self.disturbances_actual = [(0.0, 0.0)]
+
+        # --- Store kick parameters and state flags ---
+        self.kick_path_target_index = kick_path_target_index
+        self.kick_path_trigger_distance = kick_path_trigger_distance
+        self.kick_path_trigger_distance_sq = kick_path_trigger_distance**2 # Precompute square
+        self.kick_duration = kick_duration
+        self.kick_magnitude = np.array(kick_magnitude)
+
+        # Validate target index
+        if self.kick_path_target_index is not None:
+             if not (0 <= self.kick_path_target_index < len(self.desired_path)):
+                  raise ValueError(f"kick_path_target_index ({self.kick_path_target_index}) is out of bounds for desired_path length ({len(self.desired_path)})")
+             self.kick_target_point_coords = self.desired_path[self.kick_path_target_index] # Store target coords
+        else:
+             self.kick_target_point_coords = None
+
+
+        self.kick_triggered_flag = False # Has the kick been triggered yet?
+        self.kick_start_time_actual = -1.0 # Time when the kick was actually triggered
+
 
     def _apply_disturbance(self):
-        """ Generate some random disturbance torque vector """
-        disturbance_v1 = np.random.uniform(-self.dB, self.dB) if self.dB > 0 else 0.0
-        disturbance_omega = np.random.uniform(-self.dB, self.dB) if self.dB > 0 else 0.0
-        tau_d_effective = np.array([disturbance_v1, disturbance_omega])
+        """
+        Generate disturbance torque vector.
+        Applies a predefined kick for a fixed duration once the robot gets close
+        to a specific point on the desired trajectory,
+        otherwise applies continuous random disturbance based on self.dB.
+        """
+        current_time = self.time_stamps[-1]
+        current_pos = np.array([self.x, self.y])
+
+        # 1. Check if robot is close to the target path point (if kick is enabled and not already triggered)
+        if self.kick_target_point_coords is not None and not self.kick_triggered_flag:
+            dist_sq = np.sum((current_pos - self.kick_target_point_coords)**2)
+            if dist_sq < self.kick_path_trigger_distance_sq:
+                print(f"--- Kick Triggered near Path Index {self.kick_path_target_index} at Time: {current_time:.2f}s ---")
+                self.kick_triggered_flag = True
+                self.kick_start_time_actual = current_time # Record the time it was triggered
+
+        # 2. Determine if the kick should be active *in this timestep*
+        kick_active_now = False
+        if self.kick_triggered_flag:
+            # Check if current time is within the kick duration window after triggering
+            if current_time < self.kick_start_time_actual + self.kick_duration:
+                kick_active_now = True
+
+        # 3. Apply the appropriate disturbance
+        if kick_active_now:
+            # Apply the predefined kick magnitude
+            tau_d_effective = self.kick_magnitude
+        else:
+            # Apply the standard continuous random disturbance
+            disturbance_v1 = np.random.uniform(-self.dB, self.dB) if self.dB > 0 else 0.0
+            disturbance_omega = np.random.uniform(-self.dB, self.dB) if self.dB > 0 else 0.0
+            tau_d_effective = np.array([disturbance_v1, disturbance_omega])
+
         return tau_d_effective
 
 
@@ -73,6 +129,7 @@ class Simulation:
         tau_cmd = np.array([tau_right, tau_left])
 
         # Calculate actual disturbance for this step (applied during k -> k+1)
+        # This now includes potential kick or standard disturbance
         tau_d_actual = self._apply_disturbance()
         self.disturbances_actual.append(tuple(tau_d_actual))
 

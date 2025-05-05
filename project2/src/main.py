@@ -79,7 +79,7 @@ def generate_path(path_type_index=2):
 
 def main():
     # --- Simulation Parameters ---
-    selected_path_type = 10 # Choose path type index (e.g., 6 for SineWave, 10 for Complex)
+    selected_path_type = 7# Choose path type index (e.g., 6 for SineWave, 10 for Complex)
     path_name = PATH_TYPES.get(selected_path_type, "Custom")
     print(f"Generating path: {path_name} (Type {selected_path_type})")
 
@@ -101,15 +101,16 @@ def main():
     initial_velocity = np.array([0.0, 0.0]) # Start from rest
 
     dt = 0.02           # Simulation time step (s)
-    wheel_radius = 0.05 # m (r)
-    wheel_width = 0.3   # m (W)
+    wheel_radius = 0.005 # m (r)
+    wheel_width = 0.03   # m (W)
     max_steps = 3000    # Maximum simulation steps (increase for complex paths)
 
     # --- Robot Dynamic Parameters (Actual Values for Simulation) ---
-    robot_mass = 15.0      # kg (m)
+    robot_mass = 1.50      # kg (m)
     robot_inertia = 1.2    # kg*m^2 (I)
-    # disturbance_level = 0.0 # Set to 0 for no disturbance initially
-    disturbance_level = 0.5 # Max disturbance torque in simulation (Nm)
+    # Continuous disturbance level (can be set to 0 if only kick is desired)
+    disturbance_level = 0.8 # Max continuous random disturbance torque (Nm)
+    # disturbance_level = 0.0 # Example: Turn off continuous disturbance
 
     # --- Kinematic Controller Parameters ---
     kin_k_forward = 1.8
@@ -121,7 +122,7 @@ def main():
 
     # --- Adaptive Controller Parameters ---
     # Initial estimates for [m, I] - Start closer for stability?
-    initial_p_hat = np.array([robot_mass * 0.8, robot_inertia * 1.5])
+    initial_p_hat = np.array([robot_mass * 0.8, robot_inertia * 1.2])
     # Adaptation gains for p_hat = [m_hat, I_hat] - Lower these significantly!
     gamma_p = np.diag([0.05, 0.005]) # << ADJUST THESE >>
     # Velocity error feedback gains Kd = diag(kd1, kd2) - Proportional to initial estimates?
@@ -129,18 +130,41 @@ def main():
     kd2_factor = 8.0 # Factor multiplied by inertia estimate
     kd = np.diag([initial_p_hat[0] * kd1_factor, initial_p_hat[1] * kd2_factor])
     # Assumed disturbance bound for controller's robust term
-    controller_dB = disturbance_level * 1.2 # Controller assumes slightly higher bound
-    use_robust = True # Enable robust term in controller? Try False first.
+    # Should this account for the kick? Maybe set higher if kick is expected.
+    controller_dB = disturbance_level * 1.2 # Controller assumes slightly higher bound than continuous disturbance
+    use_robust = True # Enable robust term in controller?
 
     # Parameter estimate bounds (min_m, min_I), (max_m, max_I)
     min_params=np.array([1.0, 0.1])
     max_params=np.array([50.0, 10.0])
 
+    # --- Define Kick Parameters (Trajectory-Based) ---
+    # Find a suitable index on the path (e.g., halfway point)
+    kick_target_idx = len(desired_path) // 2
+    # Ensure the index is valid if path is very short
+    kick_target_idx = max(0, min(kick_target_idx, len(desired_path) - 1))
+
+    kick_trigger_dist = 0.5                 # Trigger when robot is within 0.5m of path point index
+    kick_duration_time = 0.5                # Apply kick for 0.2 seconds *after triggering*
+    # Example Kick Magnitudes (Effective Torques):
+    # kick_mag = np.array([20.0, 0.0])      # Purely forward kick (resists motion)
+    kick_mag = np.array([-0.0, -0.0])     # Kick pushing forward and CW rotation
+    # kick_mag = np.array([0.0, 0.0])       # No kick (set magnitude to zero or kick_path_target_index=None)
+
 
     # --- Initialization ---
-    simulation = Simulation(dt, desired_path, wheel_radius, wheel_width,
-                            m=robot_mass, I=robot_inertia, dB=disturbance_level,
-                            initial_pose=initial_pose, initial_velocity=initial_velocity)
+    print(f"Initializing Simulation with Trajectory Kick: Target Index={kick_target_idx}, Trigger Dist={kick_trigger_dist}m, Duration={kick_duration_time}s, Mag={kick_mag}")
+    simulation = Simulation(
+        dt, desired_path, wheel_radius, wheel_width,
+        m=robot_mass, I=robot_inertia,
+        dB=disturbance_level, # Pass the continuous disturbance level
+        initial_pose=initial_pose, initial_velocity=initial_velocity,
+        # --- Pass the trajectory-based kick parameters ---
+        kick_path_target_index=kick_target_idx if np.any(kick_mag) else None, # Pass None if mag is zero vector
+        kick_path_trigger_distance=kick_trigger_dist,
+        kick_duration=kick_duration_time,
+        kick_magnitude=kick_mag
+    )
 
     kinematic_controller = LyapunovKinematicController(
         k_forward=kin_k_forward, k_theta=kin_k_theta,
@@ -236,6 +260,13 @@ def main():
     print("Creating visualization and animation...")
     visualizer = Visualizer(desired_path)
 
+    # Add marker for kick trigger point (optional visualization enhancement)
+    if simulation.kick_target_point_coords is not None:
+        target_coords = simulation.kick_target_point_coords
+        visualizer.path_ax.plot(target_coords[0], target_coords[1], 'rx', markersize=10, label='Kick Trigger Point')
+        visualizer.path_ax.legend(loc='best') # Update legend to include new marker
+
+
     # Animation settings
     anim_interval = 50  # ms between frames
     anim_step = 3       # Simulation steps per animation frame
@@ -245,27 +276,30 @@ def main():
                                       interval=anim_interval, step=anim_step,
                                       true_m=robot_mass, true_I=robot_inertia)
 
-    # Save animation
-    gif_filename = f'robot_adaptive_animation_{path_name.replace(" ", "")}.gif'
-    print(f"Saving animation to {gif_filename}...")
-    try:
-        time_per_frame = anim_step * dt
-        fps = max(1, int(1.0 / time_per_frame)) if time_per_frame > 0 else 10
-        print(f"Calculated FPS for saving: {fps}")
-        # Increase writer patience if saving takes long
-        ani.save(gif_filename, writer='pillow', fps=fps, progress_callback=lambda i, n: print(f'Saving frame {i+1}/{n}') if (i+1)%50==0 or i+1==n else None)
-        print("Animation saved successfully.")
-    except Exception as e:
-        print(f"Error saving animation: {e}")
-        print("Ensure you have 'pillow' installed (`pip install pillow`) and potentially ffmpeg if saving as mp4.")
+    # # Save animation
+    # gif_filename = f'robot_adaptive_animation_{path_name.replace(" ", "")}_traj_kick.gif' # Updated filename
+    # print(f"Saving animation to {gif_filename}...")
+    # try:
+    #     time_per_frame = anim_step * dt
+    #     fps = max(1, int(1.0 / time_per_frame)) if time_per_frame > 0 else 10
+    #     print(f"Calculated FPS for saving: {fps}")
+    #     # Increase writer patience if saving takes long
+    #     ani.save(gif_filename, writer='pillow', fps=fps, progress_callback=lambda i, n: print(f'Saving frame {i+1}/{n}') if (i+1)%50==0 or i+1==n else None)
+    #     print("Animation saved successfully.")
+    # except Exception as e:
+    #     print(f"Error saving animation: {e}")
+    #     print("Ensure you have 'pillow' installed (`pip install pillow`) and potentially ffmpeg if saving as mp4.")
 
     # Plot final static results
     print("Plotting final results...")
     visualizer.plot_final_results(simulation_data, controller_status_list, path_name,
                                  true_m=robot_mass, true_I=robot_inertia)
 
-    # Show plots
-    plt.show()
+    # Show plots (might not work in all environments)
+    try:
+        plt.show()
+    except Exception as e:
+        print(f"Note: Could not display plots interactively ({e}). Check saved GIF/static plots if generated.")
 
 
 if __name__ == "__main__":
