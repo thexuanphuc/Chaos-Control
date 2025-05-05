@@ -14,7 +14,7 @@ This project implements a Lyapunov-based controller for trajectory tracking of a
     <img src="project1/media/robot_animation_SineWave.gif" alt="SineWave Trajectory" width="350">
 </div>
 
-
+<!-- 
 ## Table of Contents
 - [Dependencies](#dependencies)
 - [Installation](#installation)
@@ -32,14 +32,14 @@ This project implements a Lyapunov-based controller for trajectory tracking of a
 - [Output](#output)
 
 
-<!-- 
+
 ## Installation
 
 1.  Clone the repository:
     ```bash
     git clone https://github.com/thexuanphuc/Chaos-Control
     cd Chaos-Control
-    ``` -->
+    ``` 
 
 
 ## File Structure
@@ -222,4 +222,4 @@ Running `main.py` will:
     * A plot of the calculated Lyapunov energy function $V$ over time.
 3.  Print simulation status messages to the console.
 4.  The simulation runs until `max_steps` is reached, the target is achieved, or an error occurs.
-5.  **Close the Matplotlib plot window to terminate the program** after the simulation finishes.
+5.  **Close the Matplotlib plot window to terminate the program** after the simulation finishes. -->
