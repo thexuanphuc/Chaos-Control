@@ -19,7 +19,7 @@ This repository showcases four distinct trajectory-tracking controllers for a un
 For full details, examples and instructions, please see the README in each project folder:
 
 + [project1 README](project1/README.md)  
-+ [project2 README](project2/readme.md)  
++ [project2 README](project2/README_FULL.md)  
 
 <!-- # Modify the this readme as briefly introduction for 4 projects
 
