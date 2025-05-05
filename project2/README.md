@@ -250,7 +250,7 @@ $$
 \frac{d}{dt} \left[ \frac{1}{2} \eta^T M_2 \eta \right] = \eta^T M_2 \dot{\eta}
 $$
 
-(If \(M_2\) were time-varying, an additional term \(\frac{1}{2} \eta^T \dot{M}_2 \eta\) would appear, but the document assumes \(M_2\) is constant, so this term is zero.)
+*(If $M_2$ were time‐varying, an extra term $\tfrac{1}{2}\,\eta^T\dot M_2\,\eta$ would appear, but since $M_2$ is constant ($\dot M_2=0$), this term vanishes.)*
 
 ### Second Term: 
 
@@ -260,13 +260,18 @@ $$
 \frac{d}{dt} \left[ \Delta p^T \Gamma_p^{-1} \Delta p \right] = \dot{\Delta p}^T \Gamma_p^{-1} \Delta p + \Delta p^T \Gamma_p^{-1} \dot{\Delta p}
 $$
 
-Since $\Gamma_p^{-1}$ is symmetric and $\Delta_p^T \Gamma_p^{-1}\dot{\Delta p} = \dot{\Delta_p}^T \Gamma_p^{-1}\Delta_p)^T\$:
+Since $\Gamma_p^{-1}$ is symmetric and 
+$$
+\Delta p^T \,\Gamma_p^{-1}\,\dot{\Delta p}
+=
+\bigl(\dot{\Delta p}^T \,\Gamma_p^{-1}\,\Delta p\bigr)^T
+$$
 
 $$
 \frac{d}{dt} \left[ \frac{1}{2} \Delta p^T \Gamma_p^{-1} \Delta p \right] = \Delta p^T \Gamma_p^{-1} \dot{\Delta p}
 $$
 
-But \(\dot{\Delta p} = \dot{\hat{p}}\) (since \(\dot{p} = 0\)), so:
+But $\dot{\Delta p} = \dot{\hat{p}}$ (since $\dot{p} = 0$), so:
 
 $$
 \frac{d}{dt} \left[ \frac{1}{2} \Delta p^T \Gamma_p^{-1} \Delta p \right] = \Delta p^T \Gamma_p^{-1} \dot{\hat{p}}
@@ -278,13 +283,19 @@ $$
 \frac{d}{dt} \left[ \Delta p^T \Gamma_p^{-1} \Delta p \right] = \dot{\Delta p}^T \Gamma_p^{-1} \Delta p + \Delta p^T \Gamma_p^{-1} \dot{\Delta p}
 $$
 
-Since \(\Gamma_p^{-1}\) is symmetric, and using the property \((\Delta p^T \Gamma_p^{-1} \dot{\Delta p}) = (\dot{\Delta p}^T \Gamma_p^{-1} \Delta p)^T\), we get:
+Since $ \Gamma_p^{-1}$ is symmetric, and using the property
+$$
+\Delta p^T \,\Gamma_p^{-1}\,\dot{\Delta p}
+=
+\bigl(\dot{\Delta p}^T \,\Gamma_p^{-1}\,\Delta p\bigr)^T,
+$$
+we get:
 
 $$
 \frac{d}{dt} \left[ \frac{1}{2} \Delta p^T \Gamma_p^{-1} \Delta p \right] = \Delta p^T \Gamma_p^{-1} \dot{\Delta p}
 $$
 
-But since \(\dot{\Delta p} = \dot{\hat{p}}\) (because \(\dot{p} = 0\)):
+But since $\dot{\Delta p} = \dot{\hat{p}}$ (because $\dot{p} = 0$):
 
 $$
 \frac{d}{dt} \left[ \frac{1}{2} \Delta p^T \Gamma_p^{-1} \Delta p \right] = \Delta p^T \Gamma_p^{-1} \dot{\hat{p}}
@@ -362,9 +373,7 @@ $$
 Choose:
 
 $$
-
-u_{robust} = d_B · tanh(\frac{η}{ε})
-
+u_{\mathrm{robust}} = d_{B} \,\cdot\, \tanh\!\Bigl(\frac{\eta}{\epsilon}\Bigr)
 $$
 
 Then the Lyapunov derivative becomes:
@@ -383,18 +392,13 @@ which ensures global uniform ultimate boundedness of the tracking error.
 **Control Law:**
 
 $$
-
- τ = Y_c p̂ - K_d η - d_B · tanh(η / ε)
-
+\tau = Y_c \,\hat{p}\;-\;K_d\,\eta\;-\;d_B\;\cdot\;\tanh\!\bigl(\tfrac{\eta}{\epsilon}\bigr)
 $$
-
 
 **Adaptive Law:**
 
 $$
-
-ṗ̂ = -Γₚ Y_cᵀ η
-
+\dot{\hat{p}} = -\,\Gamma_p\,Y_c^{T}\,\eta
 $$
 
 
