@@ -20,8 +20,8 @@ For full details, examples and instructions, please see the README in each proje
 
 - project1/README.md  
 - project2/README.md  
- 
-
++ [project1 README](project1/README.md)  
++ [project2 README](project2/README.md)  
 
 <!-- # Modify the this readme as briefly introduction for 4 projects
 
