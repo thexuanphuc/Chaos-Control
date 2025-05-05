@@ -283,19 +283,23 @@ $$
 \frac{d}{dt} \left[ \Delta p^T \Gamma_p^{-1} \Delta p \right] = \dot{\Delta p}^T \Gamma_p^{-1} \Delta p + \Delta p^T \Gamma_p^{-1} \dot{\Delta p}
 $$
 
-Since \(\Gamma_p^{-1}\) is symmetric, and using the property
+Since $\Gamma_p^{-1}$ is symmetric, and using the property:
+
 $$
-\Delta p^T \,\Gamma_p^{-1}\,\dot{\Delta p}
+\Delta p^T\,\Gamma_p^{-1}\,\dot{\Delta p}
 =
-\bigl(\dot{\Delta p}^T \,\Gamma_p^{-1}\,\Delta p\bigr)^T,
+\bigl(\dot{\Delta p}^T\,\Gamma_p^{-1}\,\Delta p\bigr)^T
 $$
+
 we get:
 
 $$
-\frac{d}{dt} \left[ \frac{1}{2} \Delta p^T \Gamma_p^{-1} \Delta p \right] = \Delta p^T \Gamma_p^{-1} \dot{\Delta p}
+\frac{d}{dt}\!\Bigl[\tfrac12\,\Delta p^T\,\Gamma_p^{-1}\,\Delta p\Bigr]
+= \Delta p^T\,\Gamma_p^{-1}\,\dot{\Delta p}
 $$
 
-But since \(\dot{\Delta p} = \dot{\hat{p}}\) (because \(\dot{p} = 0\)):
+But since $\dot{\Delta p} = \dot{\hat p}$ (because $\dot p = 0$):
+
 
 $$
 
