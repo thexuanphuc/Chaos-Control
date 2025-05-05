@@ -337,10 +337,11 @@ $$
 
 Substitute into the Lyapunov derivative:
 
-$$
-V̇ = -ηᵀ K_d η - ηᵀ u_robust + ηᵀ d(t) + ηᵀ Y_c Δp + Δpᵀ Γₚ⁻¹ ṗ̂
-
-$$
+<p align="center">
+  <img
+    src="https://latex.codecogs.com/svg.latex?%5Cdot%7BV%7D%20%3D%20-%5Ceta%5ET%20K_d%20%5Ceta%20-%20%5Ceta%5ET%20u_%7Brobust%7D%20%2B%20%5Ceta%5ET%20d%28t%29%20%2B%20%5Ceta%5ET%20Y_c%20%5CDelta%20p%20%2B%20%5CDelta%20p%5ET%20%5CGamma_p%5E%7B-1%7D%20%5Cdot%7B%5Chat%20p%7D"
+    alt="V̇ = -ηᵀ K_d η - ηᵀ u_{robust} + ηᵀ d(t) + ηᵀ Y_c Δp + Δpᵀ Γₚ⁻¹ ṗ̂" />
+</p>
 
 ### Adaptive Law Design
 
