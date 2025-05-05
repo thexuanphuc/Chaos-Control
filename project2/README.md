@@ -231,50 +231,40 @@ $$
 \dot{V} = \frac{d}{dt} \left[ \frac{1}{2} \eta^T M_2 \eta \right] + \frac{d}{dt} \left[ \frac{1}{2} \Delta p^T \Gamma_p^{-1} \Delta p \right]
 $$
 
-### First Term
+### First Term: $\frac{d}{dt} \left( \frac{1}{2} \eta^T M_2 \eta \right)$
 
-Using the product rule for matrices, where \(M_2\) is constant (since mass \(m\) and inertia \(I\) are treated as fixed but unknown parameters):
-
-$$
-\frac{d}{dt} \left[ \eta^T M_2 \eta \right] = \dot{\eta}^T M_2 \eta + \eta^T M_2 \dot{\eta}
-$$
-
-Since \(M_2\) is symmetric, we have:
+Using the product rule for matrices, where $M_2$ is constant (since mass $m$ and inertia $I$ are treated as fixed but unknown parameters):
 
 $$
-\eta^T M_2 \dot{\eta} = (\dot{\eta}^T M_2 \eta)^T
-$$
-So:
-
-$$
-\frac{d}{dt} \left[ \frac{1}{2} \eta^T M_2 \eta \right] = \eta^T M_2 \dot{\eta}
+\frac{d}{dt} (\eta^T M_2 \eta) = \dot{\eta}^T M_2 \eta + \eta^T M_2 \dot{\eta}
 $$
 
-*(If $M_2$ were time‐varying, an extra term $\tfrac{1}{2}\,\eta^T\dot M_2\,\eta$ would appear, but since $M_2$ is constant ($\dot M_2=0$), this term vanishes.)*
-
-### Second Term: 
-
-Since $\Gamma_p$ is constant (a design parameter), and $\Delta_p = \hat{p} - p$ with \(p\) constant (true parameters are fixed):
+Since $M_2$ is symmetric, $\eta^T M_2 \dot{\eta} = (\dot{\eta}^T M_2 \eta)^T$, so:
 
 $$
-\frac{d}{dt} \left[ \Delta p^T \Gamma_p^{-1} \Delta p \right] = \dot{\Delta p}^T \Gamma_p^{-1} \Delta p + \Delta p^T \Gamma_p^{-1} \dot{\Delta p}
+\frac{d}{dt} \left( \frac{1}{2} \eta^T M_2 \eta \right) = \eta^T M_2 \dot{\eta}
 $$
 
-Since $\Gamma_p^{-1}$ is symmetric and 
-$$
-\Delta p^T \,\Gamma_p^{-1}\,\dot{\Delta p}
-=
-\bigl(\dot{\Delta p}^T \,\Gamma_p^{-1}\,\Delta p\bigr)^T
-$$
+*(If $M_2$ were time-varying, an additional term $\frac{1}{2}\eta^T \dot M_2 \eta$ would appear, but the document assumes $M_2$ is constant, so this term is zero.)*
+
+### Second Term: $\frac{d}{dt} \left( \frac{1}{2} \Delta p^T \Gamma_p^{-1} \Delta p \right)$
+
+Since $\Gamma_p$ is constant (a design parameter), and $\Delta p = \hat{p} - p$ with $p$ constant (true parameters are fixed):
 
 $$
-\frac{d}{dt} \left[ \frac{1}{2} \Delta p^T \Gamma_p^{-1} \Delta p \right] = \Delta p^T \Gamma_p^{-1} \dot{\Delta p}
+\frac{d}{dt} (\Delta p^T \Gamma_p^{-1} \Delta p) = \dot{\Delta p}^T \Gamma_p^{-1} \Delta p + \Delta p^T \Gamma_p^{-1} \dot{\Delta p}
+$$
+
+Since $\Gamma_p^{-1}$ is symmetric and $\Delta p^T \Gamma_p^{-1} \dot{\Delta p} = (\dot{\Delta p}^T \Gamma_p^{-1} \Delta p)^T$:
+
+$$
+\frac{d}{dt} \left( \frac{1}{2} \Delta p^T \Gamma_p^{-1} \Delta p \right) = \Delta p^T \Gamma_p^{-1} \dot{\Delta p}
 $$
 
 But $\dot{\Delta p} = \dot{\hat{p}}$ (since $\dot{p} = 0$), so:
 
 $$
-\frac{d}{dt} \left[ \frac{1}{2} \Delta p^T \Gamma_p^{-1} \Delta p \right] = \Delta p^T \Gamma_p^{-1} \dot{\hat{p}}
+\frac{d}{dt} \left( \frac{1}{2} \Delta p^T \Gamma_p^{-1} \Delta p \right) = \Delta p^T \Gamma_p^{-1} \dot{\hat{p}}
 $$
 
 Alternatively, expressing it in terms of the derivative:
