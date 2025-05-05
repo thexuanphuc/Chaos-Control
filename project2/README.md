@@ -283,7 +283,7 @@ $$
 \frac{d}{dt} \left[ \Delta p^T \Gamma_p^{-1} \Delta p \right] = \dot{\Delta p}^T \Gamma_p^{-1} \Delta p + \Delta p^T \Gamma_p^{-1} \dot{\Delta p}
 $$
 
-Since $ \Gamma_p^{-1}$ is symmetric, and using the property
+Since \(\Gamma_p^{-1}\) is symmetric, and using the property
 $$
 \Delta p^T \,\Gamma_p^{-1}\,\dot{\Delta p}
 =
@@ -295,9 +295,10 @@ $$
 \frac{d}{dt} \left[ \frac{1}{2} \Delta p^T \Gamma_p^{-1} \Delta p \right] = \Delta p^T \Gamma_p^{-1} \dot{\Delta p}
 $$
 
-But since $\dot{\Delta p} = \dot{\hat{p}}$ (because $\dot{p} = 0$):
+But since \(\dot{\Delta p} = \dot{\hat{p}}\) (because \(\dot{p} = 0\)):
 
 $$
+
 \frac{d}{dt} \left[ \frac{1}{2} \Delta p^T \Gamma_p^{-1} \Delta p \right] = \Delta p^T \Gamma_p^{-1} \dot{\hat{p}}
 $$
 
