@@ -291,10 +291,11 @@ $$
 But since $\dot{\Delta p} = \dot{\hat p}$ (because $\dot p = 0$):
 
 
-$$
-
-\frac{d}{dt} \left[ \frac{1}{2} \Delta p^T \Gamma_p^{-1} \Delta p \right] = \Delta p^T \Gamma_p^{-1} \dot{\hat{p}}
-$$
+<p align="center">
+  <img
+    src="https://latex.codecogs.com/svg.latex?\frac{d}{dt}%20\left[%20\frac{1}{2}%20\Delta%20p^T%20\Gamma_p^{-1}%20\Delta%20p%20\right]%20=%20\Delta%20p^T%20\Gamma_p^{-1}%20\dot{\hat{p}}"
+    alt="\frac{d}{dt} \left[ \frac{1}{2} \Delta p^T \Gamma_p^{-1} \Delta p \right] = \Delta p^T \Gamma_p^{-1} \dot{\hat{p}}" />
+</p>
 
 $$V̇ := ηᵀ M₂ η̇ + Δpᵀ Γₚ⁻¹ ṗ̂ $$
 $$= ηᵀ M₂ (v̇ - v̇ᵈ) + Δpᵀ Γₚ⁻¹ ṗ̂ $$
