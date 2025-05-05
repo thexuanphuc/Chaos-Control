@@ -322,11 +322,11 @@ $$
 
 Choose the control law:
 
-$$
-
-τ = Y_c · p̂ - K_d · η - u_{robust}
-
-$$
+<p align="center">
+  <img
+    src="https://latex.codecogs.com/svg.latex?%5Ctau%20%3D%20Y_c%20%5Ccdot%20%5Chat%7Bp%7D%20-%20K_d%20%5Ccdot%20%5Ceta%20-%20u_%7Brobust%7D"
+    alt="\tau = Y_c \cdot \hat{p} - K_d \cdot \eta - u_{robust}" />
+</p>
 
 Then:
 
