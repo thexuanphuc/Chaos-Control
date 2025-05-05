@@ -275,11 +275,11 @@ $$
 
 Since $\Gamma_p^{-1}$ is symmetric, and using the property:
 
-$$
-\Delta p^T\,\Gamma_p^{-1}\,\dot{\Delta p}
-=
-\bigl(\dot{\Delta p}^T\,\Gamma_p^{-1}\,\Delta p\bigr)^T
-$$
+<p align="center">
+  <img
+    src="https://latex.codecogs.com/svg.latex?\Delta%20p^T%20\Gamma_p^{-1}%20\dot{\Delta%20p}%20=%20(\dot{\Delta%20p}^T%20\Gamma_p^{-1}%20\Delta%20p)^T"
+    alt="\Delta p^T \Gamma_p^{-1} \dot{\Delta p} = (\dot{\Delta p}^T \Gamma_p^{-1} \Delta p)^T" />
+</p>
 
 we get:
 
