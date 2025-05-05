@@ -1,5 +1,28 @@
 # Mass and Inertia Adaptive Control for Robust Path Following in Nonholonomic Mobile Robots
 
+## Table of Contents
+
+- [Introduction](#introduction)
+- [Problem Statement](#problem-statement)
+- [Kinematic Control Layer](#kinematic-control-layer)
+  - [Reference Vehicle Dynamics](#reference-vehicle-dynamics)
+  - [Error Definition in Local Coordinates](#error-definition-in-local-coordinates)
+  - [Error Dynamics in Local Coordinates](#error-dynamics-in-local-coordinates)
+- [Control Strategy](#control-strategy)
+  - [Candidate Lyapunov Function](#candidate-lyapunov-function)
+  - [Control Law](#control-law)
+- [Dynamic Model of the Robot](#dynamic-model-of-the-robot)
+- [Regressor Matrix and Parameter Estimation](#regressor-matrix-and-parameter-estimation)
+- [Lyapunov-Based Adaptive Control Design](#lyapunov-based-adaptive-control-design)
+  - [Tracking Error and Lyapunov Candidate](#tracking-error-and-lyapunov-candidate)
+  - [Time Derivative of the Lyapunov Function](#time-derivative-of-the-lyapunov-function)
+    - [First Term](#first-term)
+    - [Second Term](#second-term)
+  - [Control Law Design](#control-law-design)
+  - [Adaptive Law Design](#adaptive-law-design)
+  - [Robust Term Design](#robust-term-design)
+- [Final Control and Adaptive Laws](#final-control-and-adaptive-laws)
+
 ## Introduction
 
 This repository presents a robust adaptive control strategy for path following in a 3-wheeled nonholonomic mobile robot under unknown mass, inertia, and wind disturbances. The controller combines a kinematic path-following design with a Lyapunov-based adaptive dynamic law to estimate uncertain parameters and ensure stability. The approach uses:
