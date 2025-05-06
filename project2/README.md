@@ -439,7 +439,7 @@ The key simulation parameters are set near the top of the `main()` function in `
 *  inertia
 *  kd1_factor for mass
 *  kd2_factor for inertia
-*  Γₚ which adaptive matrix
+*  Γₚ which is adaptive gain matrix
 *  bounded disturbance parameter
 *  Kick/disturbance parameter
 *  Kick/disturbance duration
