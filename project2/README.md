@@ -34,6 +34,11 @@
   - [Adaptive Law Design](#adaptive-law-design)
   - [Robust Term Design](#robust-term-design)
 - [Final Control and Adaptive Laws](#final-control-and-adaptive-laws)
+- [Implementation Details](#implementation-details)
+  - [Path Generation](#path-generation)
+  - [Controller Parameters](#simulation-and-controller-parameters)
+- [Usage](#usage)
+- [Output](#output)
 
 ## Introduction
 
