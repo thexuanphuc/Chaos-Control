@@ -407,7 +407,7 @@ $$
 **Adaptive Law:**
 
 $$
-\dot{\hat{p}} = -\Gamma_p\Y_c^{T}\eta
+\dot{\hat{p}} = -\Gamma_p Y_c^{T}\eta
 $$
 
 
