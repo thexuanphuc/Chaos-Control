@@ -177,7 +177,7 @@ $$ \dot{V} := -K_x e_x^2 - \frac{K_\theta}{K_y} e_\theta^2 $$
 We consider a second-order mechanical system (linear + angular velocity dynamics) given by:
 
 $$
-M₂(p) · v̇ = τ + d(t)
+M₂(p)·v̇ = τ + d(t)
 $$
 
 Where:
@@ -195,7 +195,7 @@ We assume the exact values of the parameters $m$, $I$, and the disturbance $d(t)
 Define:
 - `p = [m, I]ᵀ` as the unknown parameter vector.
 - `p̂` as the adaptive estimate of `p`.
-- `\Delta p = p̂ - p` as the estimation error.
+- `Δp = p̂ - p` as the estimation error.
 
 Let  `vᵈ = [v₁ᵈ, ωᵈ]ᵀ` be the desired velocity vector from a kinematic controller.
 
@@ -220,7 +220,7 @@ $$
 We choose a Lyapunov candidate function:
 
 $$
-V := \frac{1}{2} ηᵀ M₂ η + \frac{1}{2} Δpᵀ Γₚ⁻¹ Δp
+V := \frac{1}{2} ηᵀM₂η + \frac{1}{2}ΔpᵀΓₚ⁻¹Δp
 $$
 
 where:
@@ -315,7 +315,7 @@ $$= ηᵀ (τ + d(t)) - ηᵀ M₂ v̇ᵈ + Δpᵀ Γₚ⁻¹ ṗ̂ $$
 $$= ηᵀ τ + ηᵀ d(t) - ηᵀ Y_c p + Δpᵀ Γₚ⁻¹ ṗ̂ $$
 
 
-Using `p = ṗ̂̂ + p̂`:
+Using `p = ṗ̂ - Δp`:
 
 $$
 -ηᵀ Y_c p = -ηᵀ Y_c ṗ̂ + ηᵀ Y_c Δp
@@ -324,7 +324,7 @@ $$
 Substitute into `V̇`:
 
 $$
-V̇ = ηᵀ τ - ηᵀ Y_c p̂ + ηᵀ d(t) + ηᵀ Y_c Δp + Δpᵀ Γₚ⁻¹ ṗ̂
+V̇ = ηᵀ τ - ηᵀ Y_c p̂ + ηᵀ d(t) + ηᵀ Y_c Δp + ΔpᵀΓₚ⁻¹ ṗ̂
 $$
 
 
@@ -382,7 +382,7 @@ $$
 Choose:
 
 $$
-u_{\mathrm{robust}} = d_{B} \,\cdot\, \tanh\!\Bigl(\frac{\eta}{\epsilon}\Bigr)
+u_{\mathrm{robust}} = d_{B} \,\cdot\, \tanh\Bigl(\frac{\eta}{\epsilon}\Bigr)
 $$
 
 Then the Lyapunov derivative becomes:
@@ -401,7 +401,7 @@ which ensures global uniform ultimate boundedness of the tracking error.
 **Control Law:**
 
 $$
-\tau = Y_c \,\hat{p}\;-\;K_d\,\eta\;-\;d_B\;\cdot\;\tanh\!\bigl(\tfrac{\eta}{\epsilon}\bigr)
+\tau = Y_c \,\hat{p}\;-\;K_d\,\eta\;-\;d_B\;\cdot\;\tanh\bigl(\tfrac{\eta}{\epsilon}\bigr)
 $$
 
 **Adaptive Law:**
