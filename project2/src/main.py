@@ -113,7 +113,7 @@ def main():
     robot_mass = 20
     robot_inertia = 5
     # --- Make sure disturbance is significant ---
-    disturbance_level =0 # Max continuous random disturbance torque (Nm) - Keep low if focusing on kick
+    disturbance_level = 0.5 # Max continuous random disturbance torque (Nm) - Keep low if focusing on kick
     
     # --- Kinematic Controller Parameters ---
     kin_k_forward = 1.8
@@ -153,7 +153,7 @@ def main():
     kick_trigger_dist = 0.5
     kick_duration_time = 1# Make it last a bit longer to see effect
     # This kick should be strong enough to destabilize the non-adaptive controller
-    kick_mag = np.array([-100.0, 0]) # Forward and CW rotational kick
+    kick_mag = np.array([-100.0, 10.0]) # Forward and CW rotational kick
     # kick_mag = np.array([0.0, 0.0]) # Uncomment to disable kick for a baseline run
 
     print(f"Initializing Simulation with Trajectory Kick: Target Index={kick_target_idx}, Trigger Dist={kick_trigger_dist}m, Duration={kick_duration_time}s, Mag={kick_mag}")
