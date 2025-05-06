@@ -79,7 +79,7 @@ def generate_path(path_type_index=2):
 
 def main():
     # --- Simulation Parameters ---
-    selected_path_type = 10 # Choose path type index (e.g., 6 for SineWave, 10 for Complex)
+    selected_path_type = 1 # Choose path type index (e.g., 6 for SineWave, 10 for Complex)
     path_name = PATH_TYPES.get(selected_path_type, "Custom")
     print(f"Generating path: {path_name} (Type {selected_path_type})")
 
@@ -245,19 +245,19 @@ def main():
                                       interval=anim_interval, step=anim_step,
                                       true_m=robot_mass, true_I=robot_inertia)
 
-    # Save animation
-    gif_filename = f'robot_adaptive_animation_{path_name.replace(" ", "")}.gif'
-    print(f"Saving animation to {gif_filename}...")
-    try:
-        time_per_frame = anim_step * dt
-        fps = max(1, int(1.0 / time_per_frame)) if time_per_frame > 0 else 10
-        print(f"Calculated FPS for saving: {fps}")
-        # Increase writer patience if saving takes long
-        ani.save(gif_filename, writer='pillow', fps=fps, progress_callback=lambda i, n: print(f'Saving frame {i+1}/{n}') if (i+1)%50==0 or i+1==n else None)
-        print("Animation saved successfully.")
-    except Exception as e:
-        print(f"Error saving animation: {e}")
-        print("Ensure you have 'pillow' installed (`pip install pillow`) and potentially ffmpeg if saving as mp4.")
+    # # Save animation
+    # gif_filename = f'robot_adaptive_animation_{path_name.replace(" ", "")}.gif'
+    # print(f"Saving animation to {gif_filename}...")
+    # try:
+    #     time_per_frame = anim_step * dt
+    #     fps = max(1, int(1.0 / time_per_frame)) if time_per_frame > 0 else 10
+    #     print(f"Calculated FPS for saving: {fps}")
+    #     # Increase writer patience if saving takes long
+    #     ani.save(gif_filename, writer='pillow', fps=fps, progress_callback=lambda i, n: print(f'Saving frame {i+1}/{n}') if (i+1)%50==0 or i+1==n else None)
+    #     print("Animation saved successfully.")
+    # except Exception as e:
+    #     print(f"Error saving animation: {e}")
+    #     print("Ensure you have 'pillow' installed (`pip install pillow`) and potentially ffmpeg if saving as mp4.")
 
     # Plot final static results
     print("Plotting final results...")
