@@ -1,5 +1,7 @@
 # Project 2 Defense: Adaptive Dynamic Control
 
+![Robot Plant Diagram](/home/kngn/v5.1/photo_5474317598851200123_x.jpg)
+
 ## 1. System Definition
 
 ### 1.1. Variable Definition
