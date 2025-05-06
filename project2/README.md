@@ -401,13 +401,13 @@ which ensures global uniform ultimate boundedness of the tracking error.
 **Control Law:**
 
 $$
-\tau = Y_c \,\hat{p}\;-\;K_d\,\eta\;-\;d_B\;\cdot\;\tanh\bigl(\tfrac{\eta}{\epsilon}\bigr)
+\tau = Y_c \hat{p}-K_d\eta\-d_B\cdot\tanh\bigl(\tfrac{\eta}{\epsilon}\bigr)
 $$
 
 **Adaptive Law:**
 
 $$
-\dot{\hat{p}} = -\,\Gamma_p\,Y_c^{T}\,\eta
+\dot{\hat{p}} = -\Gamma_p\Y_c^{T}\eta
 $$
 
 
