@@ -257,7 +257,7 @@ $$
 \frac{d}{dt} \left( \frac{1}{2} \eta^T M_2 \eta \right) = \eta^T M_2 \dot{\eta}
 $$
 
-(If $M_2$ were time-varying, an additional term $\frac{1}{2}\eta^T \dot M_2 \eta$ would appear, but the document assumes $M_2$ is constant, so this term is zero.)
+(If $M_2$ were time-varying, an additional term $\frac{1}{2}\eta^T \dot M_2 \eta$ would appear, but we assume $M_2$ is constant, so this term is zero.)
 
 ### Second Term: $\frac{d}{dt} \left( \frac{1}{2} \Delta p^T \Gamma_p^{-1} \Delta p \right)$
 
