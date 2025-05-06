@@ -411,3 +411,59 @@ $$
 $$
 
 
+## Implementation Details
+
+### Path Generation
+
+The `generate_path` function in `main.py` can create various geometric paths (Circle, Ellipse, Spiral, Line, etc.). You select the desired path type using the `selected_path_type` variable in `main.py`.
+
+### Simulation and Controller Parameters
+
+The key simulation parameters are set near the top of the `main()` function in `main.py`:
+
+* `k_forward`: Corresponds to $K_x$.
+* `k_theta`: Corresponds to $K_\theta$.
+* `k_lateral_gain_factor`: Used to determine $K_y$ ($K_y = K_{\theta} \times k_{lateral-gain-factor}$).
+* `v_ref`: Corresponds to $v_{ref}$.
+* `omega_max`: Maximum limit applied to the calculated chassis angular velocity $\omega$.
+* `wheel_radius`, `wheel_width`: Robot physical parameters used for simulation and control calculations.
+* `dt`: Simulation time step.
+*  wheel_radius 
+*  wheel_width
+*  mass
+*  inertia
+*  kd1_factor for mass
+*  kd2_factor for inertia
+*  Γₚ which adaptive matrix
+*  bounded disturbance parameter
+*  Kick/disturbance parameter
+*  Kick/disturbance duration
+
+
+## Usage
+
+1.  Ensure you have installed the dependencies (`numpy`, `matplotlib`).
+2.  Clone the repository and navigate into the project directory.
+3.  Modify simulation parameters, path type (`selected_path_type`), and controller gains directly within the `main.py` file (inside the `src` directory).
+4.  Run the simulation from the terminal (ensure your terminal's working directory is the one *containing* the `src` folder):
+    ```bash
+    python src/main.py
+    ```
+    (Or navigate *into* the `src` directory and run `python main.py`).
+
+## Output
+
+Running `main.py` will:
+
+1.  Open a Matplotlib window.
+2.  Display the simulation live, showing:
+    * The desired path (dashed red line).
+    * The robot's actual path (solid green line).
+    * The robot's current position and orientation (blue circle and arrow).
+    * Plots of wheel velocity commands over time.
+    * Plots of the robot's actual forward and angular velocities over time.
+    * Plots of the tracking errors ($e_x$, $e_y$, $e_\theta$) over time.
+    * A plot of the calculated Lyapunov energy function $V$ over time.
+3.  Print simulation status messages to the console.
+4.  The simulation runs until `max_steps` is reached, the target is achieved, or an error occurs.
+5.  **Close the Matplotlib plot window to terminate the program** after the simulation finishes.
