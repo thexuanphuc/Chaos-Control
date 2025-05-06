@@ -78,10 +78,11 @@ $$
 $$
 
 Where:
-* `(x, y)` is the robot's position in the world frame.
-* `\theta` is the robot's orientation (angle with the world X-axis).
+* `(x, y)` is the robot's position in the world frame. `\theta` is the robot's orientation (angle with the world X-axis).
+*  s = [x,y,\theta]
 * `v` is the forward linear velocity.
 * `omega` is the angular velocity.
+* a = [v,omega]
 
 The `Simulation` class uses this model implicitly when converting wheel velocities (commands from the controller) into chassis motion (`v`, `omega`) and updating the state (`x`, `y`, `theta`).
 
