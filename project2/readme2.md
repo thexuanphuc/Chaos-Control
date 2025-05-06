@@ -481,3 +481,62 @@ Running `main.py` will:
 3.  Print simulation status messages to the console.
 4.  The simulation runs until `max_steps` is reached, the target is achieved, or an error occurs.
 5.  **Close the Matplotlib plot window to terminate the program** after the simulation finishes.
+
+### Pseudo Code
+```plaintext
+START TRY
+    // Initialize simulation parameters
+    DEFINE simulation_parameters (time_step, max_steps, robot_properties, path_type, controller_gains)
+
+    // Generate path
+    GENERATE desired_path based on path_type
+    IF path_generation fails THEN
+        THROW error "Path generation failed"
+    END IF
+
+    // Initialize components
+    INITIALIZE simulation_environment with robot_state (position, velocity, orientation) and robot_dynamics
+    INITIALIZE kinematic_controller with controller_gains
+    INITIALIZE adaptive_controller with controller_gains
+    INITIALIZE visualizer with visualization_settings
+
+    // Initialize data storage
+    INITIALIZE data_storage for states, torques, errors, timestamps
+
+    // Main simulation loop
+    LOOP until max_steps reached OR controller signals completion:
+        // Get current state
+        GET current_state (position, velocity, orientation) from simulation_environment
+        IF state_invalid THEN
+            THROW error "Invalid robot state"
+        END IF
+
+        // Calculate control commands
+        CALCULATE desired_velocities using kinematic_controller based on current_state and desired_path
+        CALCULATE control_torques using adaptive_controller based on desired_velocities and current_state
+
+        // Apply controls and update simulation
+        APPLY control_torques to simulation_environment
+        UPDATE robot_state in simulation_environment considering dynamics and disturbances
+        IF simulation_update fails THEN
+            THROW error "Simulation update failed"
+        END IF
+
+        // Store data
+        STORE in data_storage:
+            current_state
+            control_torques
+            tracking_errors
+            current_timestamp
+
+        // Check completion
+        IF controller signals completion THEN
+            BREAK loop
+        END IF
+    END LOOP
+
+    // Process and visualize results
+    PROCESS simulation_data from data_storage
+- Data collection
+- Visualization of results
+
