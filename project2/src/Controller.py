@@ -348,3 +348,96 @@ class AdaptiveDynamicController(Controller):
         status = {'eta': eta, 'p_hat': self.p_hat.copy(), 'kin_errors': kin_errors, 'v_d': v_d}
 
         return tau_left, tau_right, status
+# --- NonAdaptiveDynamicController ---
+class NonAdaptiveDynamicController(Controller):
+    def __init__(self, dt, wheel_radius, wheel_width,
+                 kinematic_controller: LyapunovKinematicController,
+                 assumed_p=np.array([1.0, 0.1]), # Assumed fixed parameters [m, I]
+                 kd=np.diag([10.0, 5.0])        # Velocity error feedback gain K_d
+                 ):
+        """
+        Non-Adaptive dynamic controller that uses fixed assumed dynamic parameters.
+        It does not adapt to uncertainties or actively reject disturbances via a robust term.
+        :param dt: Simulation time step.
+        :param wheel_radius: Radius of the wheels (r).
+        :param wheel_width: Distance between the wheels (W).
+        :param kinematic_controller: Instance of a kinematic controller providing v_d.
+        :param assumed_p: Assumed fixed parameters for the robot [m, I].
+        :param kd: Gain matrix (positive definite) for velocity error feedback.
+        """
+        super().__init__()
+        self.dt = dt
+        if dt <= 0: raise ValueError("Time step dt must be positive.")
+        self.kinematic_controller = kinematic_controller
+        self.p_assumed = np.array(assumed_p, dtype=float) # Fixed assumed [m, I]
+        self.Kd = np.array(kd, dtype=float)
+
+        # Precompute B2 inverse matrix
+        r = wheel_radius
+        W = wheel_width
+        if W == 0: raise ValueError("Wheel width cannot be zero")
+        self.B2_inv = (r / W) * np.array([
+            [W / 2.0, 1.0],
+            [W / 2.0, -1.0]
+        ])
+
+        # Store previous desired velocities for derivative estimate
+        self.prev_v1d_kin = 0.0
+        self.prev_omegad_kin = 0.0
+        self.first_run = True
+
+    def compute_control(self, robot_state, predefined_path):
+        """
+        Compute torque commands based on fixed assumed dynamics.
+        :param robot_state: Current full state (x, y, theta, v1, omega).
+        :param predefined_path: Target path (N, 2).
+        :return: Tuple (tau_left, tau_right, status)
+                 status = {'eta': eta, 'p_hat': p_assumed, 'kin_errors': kin_errors, 'v_d': v_d}
+        """
+        x, y, theta, v1, omega = robot_state
+        v_actual = np.array([v1, omega])
+
+        # 1. Get desired kinematic velocities (v_d) from the kinematic controller
+        v1d, omegad, kin_errors, finished = self.kinematic_controller.compute_desired_velocities(robot_state, predefined_path)
+        v_d = np.array([v1d, omegad])
+
+        if self.first_run:
+            self.prev_v1d_kin = v1d
+            self.prev_omegad_kin = omegad
+            self.first_run = False
+
+        if finished:
+            eta = v_actual - v_d
+            # For status, p_hat will be the fixed assumed parameters
+            status = {'eta': eta, 'p_hat': self.p_assumed.copy(), 'kin_errors': kin_errors, 'v_d': v_d}
+            return 0.0, 0.0, status
+
+        # 2. Estimate derivative of desired velocities
+        v1d_dot = (v1d - self.prev_v1d_kin) / self.dt
+        omegad_dot = (omegad - self.prev_omegad_kin) / self.dt
+        self.prev_v1d_kin = v1d
+        self.prev_omegad_kin = omegad
+        vd_dot = np.array([v1d_dot, omegad_dot])
+
+        # 3. Calculate velocity error (eta = v_actual - v_desired)
+        eta = v_actual - v_d
+
+        # 4. Calculate Regressor Matrix Yc (as if computing for control, using assumed parameters)
+        Yc = np.diag(vd_dot)
+
+        # 5. Calculate Control Torque Tau (NO adaptation, NO robust term)
+        # B2*tau = Yc*p_assumed - Kd*eta
+        term1 = Yc @ self.p_assumed
+        term2 = self.Kd @ eta
+        
+        tau_bar = term1 - term2  # Note: No u_robust term
+        tau_cmd = self.B2_inv @ tau_bar # tau_cmd = [tau_r, tau_l]^T
+        tau_right, tau_left = tau_cmd
+
+        tau_right, tau_left = tau_cmd
+
+        # Store intermediate values for analysis/plotting
+        # Report assumed_p as p_hat for consistency in plotting, clearly indicating it's not adaptive.
+        status = {'eta': eta, 'p_hat': self.p_assumed.copy(), 'kin_errors': kin_errors, 'v_d': v_d}
+
+        return tau_left, tau_right, status
