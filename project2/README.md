@@ -1,5 +1,17 @@
 # Mass and Inertia Adaptive Control for Robust Path Following in Nonholonomic Mobile Robots
 
+<div align="center">
+    <img src="project2/media/robot_adaptive_animation_Heart.gif" alt="Heart Trajectory" width="350">
+    <img src="project2/media/robot_adaptive_animation_Circle.gif" alt="Circle Trajectory" width="350">
+    <img src="project2/media/robot_adaptive_animation_Complex.gif" alt="Complex Trajectory" width="350">
+</div>
+
+<div align="center">
+    <img src="project2/media/robot_animation_Lemniscate_disturbed.gif" alt="Lemniscate Trajectory" width="350">
+    <img src="project2/media/robot_adaptive_animation_SineWave.gif" alt="SineWave Trajectory" width="350">
+    <img src="project2/media/robot_adaptive_animation_Line.gif" alt="Line Trajectory" width="350">
+</div>
+
 ## Table of Contents
 
 - [Introduction](#introduction)
