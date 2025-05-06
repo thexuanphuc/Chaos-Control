@@ -1,6 +1,14 @@
 # Mass and Inertia Adaptive Control for Robust Path Following in Nonholonomic Mobile Robots
 
 <div align="center">
+    <img src="media/robot_animation_withDisturbanceCircle_ContTorque1.0.gif" alt="Non adaptive Circle Trajectory with constant torque disturbance" width="250">
+    <img src="media/robot_animation_withDisturbanceEllipse_ContTorque1.0.gif" alt="Non adaptive Ellipse Trajectory with constant torque disturbance" width="250">
+    <img src="media/robot_animation_withDisturbanceLemniscate_ContTorque1.0.gif" alt="Non adaptive Lemniscate Trajectory with constant torque disturbance" width="250">
+    <img src="media/robot_animation_withDisturbanceLine_ContTorque1.0.gif" alt="Non adaptive Line Trajectory with constant torque disturbance" width="250">
+</div>
+
+
+<div align="center">
     <img src="media/robot_adaptive_animation_Heart.gif" alt="Heart Trajectory" width="350">
     <img src="media/robot_adaptive_animation_Circle.gif" alt="Circle Trajectory" width="350">
     <img src="media/robot_adaptive_animation_Complex.gif" alt="Complex Trajectory" width="350">
