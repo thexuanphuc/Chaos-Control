@@ -296,8 +296,8 @@ Since $\Gamma_p^{-1}$ is symmetric, and using the property:
 we get:
 
 $$
-\frac{d}{dt}\!\Bigl[\tfrac12\,\Delta p^T\,\Gamma_p^{-1}\,\Delta p\Bigr]
-= \Delta p^T\,\Gamma_p^{-1}\,\dot{\Delta p}
+\frac{d}{dt}\Bigl[\tfrac12\Delta p^T\Gamma_p^{-1}\Delta p\Bigr]
+= \Delta p^T\Gamma_p^{-1}\dot{\Delta p}
 $$
 
 But since $\dot{\Delta p} = \dot{\hat p}$ (because $\dot p = 0$):
@@ -382,7 +382,7 @@ $$
 Choose:
 
 $$
-u_{\mathrm{robust}} = d_{B} \,\cdot\, \tanh\Bigl(\frac{\eta}{\epsilon}\Bigr)
+u_{\mathrm{robust}} = d_{B} \cdot \tanh\Bigl(\frac{\eta}{\epsilon}\Bigr)
 $$
 
 Then the Lyapunov derivative becomes:
