@@ -1,0 +1,66 @@
+// --- Initialization ---
+PROCEDURE Main
+  // Simulation Setup
+  SET simulation time step (dt)
+  SET robot physical parameters (wheel radius, width, mass, inertia)
+  SET disturbance parameters (continuous level, kick properties)
+  CHOOSE path type (e.g., Circle, Line, Complex)
+  GENERATE desired path points (x, y coordinates)
+  DEFINE initial robot pose (x, y, theta) and velocity (v1, omega) near path start
+
+  // Controller Setup
+  SET kinematic controller parameters (gains, reference velocity, lookahead)
+  INITIALIZE KinematicController instance
+  SET adaptive controller parameters (initial parameter estimates, adaptation gains, feedback gains, disturbance bound, robust term usage)
+  INITIALIZE AdaptiveController instance, passing the KinematicController
+
+  // Simulation and Visualization Setup
+  INITIALIZE Simulation instance with robot params, path, initial state, and disturbance settings
+  INITIALIZE Visualizer instance with the desired path
+  INITIALIZE data storage lists (for states, torques, controller status)
+
+  // --- Simulation Loop ---
+  SET controller_finished flag = FALSE
+  FOR step FROM 0 TO max_simulation_steps:
+    current_state = Simulation.get_robot_state()
+
+    // Control Calculation (only if not finished)
+    IF NOT controller_finished:
+      TRY:
+        // Adaptive controller calls kinematic controller internally
+        (tau_left, tau_right, status) = AdaptiveController.compute_control(current_state, desired_path)
+        STORE status (errors, parameter estimates, desired velocities)
+        // Check finish flag set by kinematic controller during compute_control
+        IF KinematicController.finished_flag IS TRUE:
+          SET controller_finished = TRUE
+          SET (tau_left, tau_right) = (0.0, 0.0)
+      CATCH Exception:
+        PRINT error message
+        SET (tau_left, tau_right) = (0.0, 0.0)
+        // Optional: BREAK loop
+    ELSE: // If already finished
+      SET (tau_left, tau_right) = (0.0, 0.0)
+    END IF
+
+    // Simulation Step
+    TRY:
+      Simulation.execute_cmd(tau_left, tau_right) // Updates robot state
+    CATCH Exception:
+      PRINT error message
+      BREAK loop // Stop simulation if physics fail
+
+    // Optional: PRINT progress periodically
+
+    // Check for early loop termination
+    IF controller_finished AND step is sufficiently past the finish trigger:
+      PRINT message and BREAK loop
+  END FOR
+
+  // --- Post-Processing and Visualization ---
+  simulation_data = Simulation.get_simulation_data()
+  ADJUST stored controller status list length if needed
+  Visualizer.create_animation(simulation_data, controller_status_list)
+  // Optional: SAVE animation
+  Visualizer.plot_final_results(simulation_data, controller_status_list)
+  SHOW plots
+END PROCEDURE

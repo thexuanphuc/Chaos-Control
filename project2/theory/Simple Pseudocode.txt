@@ -1,0 +1,21 @@
+START
+  DEFINE simulation parameters (time step, robot properties, path type, controller gains)
+  GENERATE the desired path based on type
+  INITIALIZE simulation environment with robot state and dynamics
+  INITIALIZE kinematic and adaptive controllers
+  INITIALIZE visualizer
+
+  LOOP for a maximum number of steps OR until controller finishes:
+    GET current robot state (position, velocity) from simulation
+    CALCULATE desired kinematic velocities using the kinematic controller
+    CALCULATE control torques using the adaptive controller based on desired velocities and current state
+    APPLY torques to the simulated robot
+    UPDATE robot state (dynamics, disturbance)
+    STORE simulation data (state, torques, errors, etc.)
+    IF controller signals finished, BREAK loop
+  END LOOP
+
+  PROCESS collected simulation data
+  CREATE animation and plots of the results using the visualizer
+  DISPLAY or SAVE results
+END
