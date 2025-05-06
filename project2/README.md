@@ -195,7 +195,7 @@ We assume the exact values of the parameters $m$, $I$, and the disturbance $d(t)
 Define:
 - `p = [m, I]ᵀ` as the unknown parameter vector.
 - `p̂` as the adaptive estimate of `p`.
-- `ṗ̂ = p̂ - p` as the estimation error.
+- `\Delta p = p̂ - p` as the estimation error.
 
 Let  `vᵈ = [v₁ᵈ, ωᵈ]ᵀ` be the desired velocity vector from a kinematic controller.
 
