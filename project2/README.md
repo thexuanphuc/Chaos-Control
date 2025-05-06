@@ -74,7 +74,7 @@ $$
 
 Where:
 * `(x, y)` is the robot's position in the world frame.
-* `theta` is the robot's orientation (angle with the world X-axis).
+* `\theta` is the robot's orientation (angle with the world X-axis).
 * `v` is the forward linear velocity.
 * `omega` is the angular velocity.
 
