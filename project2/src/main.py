@@ -79,7 +79,7 @@ def generate_path(path_type_index=2):
 
 def main():
     # --- Simulation Parameters ---
-    selected_path_type = 7# Choose path type index (e.g., 6 for SineWave, 10 for Complex)
+    selected_path_type = 1 # Choose path type index (e.g., 6 for SineWave, 10 for Complex)
     path_name = PATH_TYPES.get(selected_path_type, "Custom")
     print(f"Generating path: {path_name} (Type {selected_path_type})")
 
@@ -277,7 +277,7 @@ def main():
                                       true_m=robot_mass, true_I=robot_inertia)
 
     # # Save animation
-    # gif_filename = f'robot_adaptive_animation_{path_name.replace(" ", "")}_traj_kick.gif' # Updated filename
+    # gif_filename = f'robot_adaptive_animation_{path_name.replace(" ", "")}.gif'
     # print(f"Saving animation to {gif_filename}...")
     # try:
     #     time_per_frame = anim_step * dt
