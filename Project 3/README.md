@@ -1,15 +1,15 @@
 # Backstepping-Based Adaptive Control for Robust Path Following in Nonholonomic Mobile Robots
 
 <div align="center">
-    <img src="media/robot_backstepping_animation_Heart.gif" alt="Heart Trajectory" width="320">
-    <img src="media/robot_backstepping_animation_Circle.gif" alt="Circle Trajectory" width="320">
-    <img src="media/robot_backstepping_animation_Complex.gif" alt="Complex Trajectory" width="320">
+    <img src="media/Heart_path_zeroOffest.gif" alt="Heart Trajectory" width="320">
+    <img src="media/Circle_path.gif" alt="Circle Trajectory" width="320">
+    <img src="media/ComplexPath_path.gif" alt="Complex Trajectory" width="320">
 </div>
 
 <div align="center">
-    <img src="media/robot_backstepping_animation_Lemniscate.gif" alt="Lemniscate Trajectory" width="320">
-    <img src="media/robot_backstepping_animation_SineWave.gif" alt="Sine Wave Trajectory" width="320">
-    <img src="media/robot_backstepping_animation_Line.gif" alt="Line Trajectory" width="320">
+    <img src="media/Lemniscate_path_zeroOffest.gif" alt="Lemniscate Trajectory" width="320">
+    <img src="media/SineWave_path_zeroOffest.gif" alt="Sine Wave Trajectory" width="320">
+    <img src="media/Line_path.gif" alt="Line Trajectory" width="320">
 </div>
 
 ## Table of Contents

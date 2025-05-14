@@ -89,7 +89,7 @@ def generate_path(path_type_index=2, num_points=150):
     return np.column_stack((x, y))
 
 def main():
-    selected_path_type_idx = 7
+    selected_path_type_idx = 1
     path_name_str = PATH_TYPES.get(selected_path_type_idx, "CustomPath")
     print(f"--- Starting Simulation for: {path_name_str} (Type {selected_path_type_idx}) ---")
     desired_path_coords = generate_path(selected_path_type_idx, num_points=200)
@@ -99,7 +99,7 @@ def main():
     path_start_dx = desired_path_coords[1, 0] - desired_path_coords[0, 0]
     path_start_dy = desired_path_coords[1, 1] - desired_path_coords[0, 1]
     initial_robot_theta = np.arctan2(path_start_dy, path_start_dx)
-    offset_distance = 5
+    offset_distance = 0
     initial_robot_pose = np.array([
         desired_path_coords[0, 0] - offset_distance * np.sin(initial_robot_theta),
         desired_path_coords[0, 1] + offset_distance * np.cos(initial_robot_theta),
@@ -218,7 +218,7 @@ def main():
         true_m=actual_robot_mass, true_I=actual_robot_inertia
     )
     # Save animation as GIF in media folder
-    gif_filename = f"{path_name_str}_path.gif"
+    gif_filename = f"{path_name_str}_path_zeroOffest.gif"
     gif_filepath = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir, "media", gif_filename))
     try:
         anim.save(gif_filepath, writer=PillowWriter(fps=1000/animation_frame_interval_ms))
