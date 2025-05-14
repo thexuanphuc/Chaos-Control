@@ -1,4 +1,27 @@
-# Modify the this readme as briefly introduction for 4 projects
+# Chaos-Control: Control Strategies for Nonholonomic Mobile Robots
+
+This repository showcases four distinct trajectory-tracking controllers for a unicycle-type mobile robot. Each subfolder contains a full implementation, simulation scripts, plots and a dedicated README.
+
+## Projects Overview
+
+1. **Energy-Based Lyapunov Controller** (project1)  
+   Implements a Lyapunov-energy-based control law that guarantees stable error convergence. Live Matplotlib animations illustrate the robot following various geometric paths.
+
+2. **Adaptive Controller** (project2)  
+   Introduces online adaptation of control gains to compensate for modeling uncertainties and parameter variations. Demonstrates improved robustness in simulation.
+
+<!-- 3. **Backstepping Controller** (project3)  
+   Applies the backstepping methodology to systematically design a nonlinear controller. Includes derivations and tuning guidelines.
+
+4. **Model Predictive Controller (MPC)** (project4)  
+   Employs receding-horizon optimization to compute control inputs under state and input constraints. Showcases real-time trajectory planning performance. -->
+
+For full details, examples and instructions, please see the README in each project folder:
+
++ [project1 README](project1/README.md)  
++ [project2 README](project2/README.md)  
+
+<!-- # Modify the this readme as briefly introduction for 4 projects
 
 # Lyapunov-Based Controller for Nonholonomic Mobile Robot
 
@@ -12,9 +35,9 @@ This project implements a Lyapunov-based controller for trajectory tracking of a
 <div align="center">
     <img src="project1/media/robot_animation_Lemniscate.gif" alt="Lemniscate Trajectory" width="350">
     <img src="project1/media/robot_animation_SineWave.gif" alt="SineWave Trajectory" width="350">
-</div>
+</div> -->
 
-
+<!-- 
 ## Table of Contents
 - [Dependencies](#dependencies)
 - [Installation](#installation)
@@ -32,14 +55,14 @@ This project implements a Lyapunov-based controller for trajectory tracking of a
 - [Output](#output)
 
 
-<!-- 
+
 ## Installation
 
 1.  Clone the repository:
     ```bash
     git clone https://github.com/thexuanphuc/Chaos-Control
     cd Chaos-Control
-    ``` -->
+    ``` 
 
 
 ## File Structure
@@ -222,4 +245,4 @@ Running `main.py` will:
     * A plot of the calculated Lyapunov energy function $V$ over time.
 3.  Print simulation status messages to the console.
 4.  The simulation runs until `max_steps` is reached, the target is achieved, or an error occurs.
-5.  **Close the Matplotlib plot window to terminate the program** after the simulation finishes.
+5.  **Close the Matplotlib plot window to terminate the program** after the simulation finishes. -->
