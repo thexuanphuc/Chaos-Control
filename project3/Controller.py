@@ -1,5 +1,6 @@
+# Controller.py
 import numpy as np
-import time # Not strictly used in this file but often kept for consistency
+import time
 
 class Controller:
     """
@@ -9,7 +10,7 @@ class Controller:
     """
     def __init__(self):
         """ Initializes the base controller. """
-        pass
+        self.target_path_idx = 0 # Common attribute for controllers that track paths
 
     def compute_control(self, robot_state, predefined_path):
         """
@@ -29,438 +30,512 @@ class Controller:
         """
         Calculates sin(x)/x, handling the singularity at x=0 using Taylor expansion.
         This function is often used in kinematic control laws for nonholonomic robots
-        to ensure numerical stability when an error term (like orientation error) is near zero.
+        to avoid division by zero when the orientation error is small.
 
-        For small x, sin(x) approx x - x^3/3! + x^5/5! - ...
-        So, sin(x)/x approx 1 - x^2/6 + x^4/120 - ...
-
-        :param x: Input value (typically an angle in radians).
-        :return: The value of sin(x)/x.
+        :param x: Input angle in radians.
+        :return: sin(x)/x.
         """
-        if np.abs(x) < 1e-6:  # Threshold for using Taylor expansion to avoid division by zero or precision loss
-            return 1.0 - x**2 / 6.0 # Second-order Taylor expansion
+        if np.abs(x) < 1e-6:  # Threshold for Taylor expansion
+            return 1.0 - x**2 / 6.0 + x**4 / 120.0
         else:
             return np.sin(x) / x
 
-# --- LyapunovKinematicController ---
+    def _normalize_angle(self, angle):
+        """Normalize an angle to the range [-pi, pi]."""
+        return (angle + np.pi) % (2 * np.pi) - np.pi
+
+    def _get_path_information(self, robot_x, robot_y, robot_theta, predefined_path, current_target_idx, lookahead_time=0.2, dt_val=0.02):
+        """
+        Determines the reference point on the path and its derivatives.
+        This version uses a moving horizon: it finds the closest point and then looks ahead.
+
+        :param robot_x: Current x position of the robot.
+        :param robot_y: Current y position of the robot.
+        :param robot_theta: Current orientation of the robot.
+        :param predefined_path: Array of (x,y) waypoints.
+        :param current_target_idx: Current target index on the path (managed by the controller instance).
+        :param lookahead_time: Time to look ahead for v_r, omega_r estimation.
+        :param dt_val: Simulation time step, used for approximating derivatives.
+        :return: Tuple containing (
+            target_idx (updated),
+            x_r, y_r, theta_r (reference pose),
+            v_r, omega_r (reference velocities),
+            v_r_dot, omega_r_dot (reference accelerations)
+        )
+        """
+        num_path_points = predefined_path.shape[0]
+        if num_path_points == 0:
+            # No path, return current robot state as reference, no movement
+            return current_target_idx, robot_x, robot_y, robot_theta, 0, 0, 0, 0
+        if num_path_points == 1:
+            # Path is a single point, target it
+            pt = predefined_path[0]
+            return 0, pt[0], pt[1], robot_theta, 0,0,0,0 # Use robot_theta if no path orientation
+
+
+        robot_pos = np.array([robot_x, robot_y])
+        distances = np.linalg.norm(predefined_path - robot_pos, axis=1)
+        
+        # Update target_idx logic:
+        # Start searching for closest from a window around the current target_idx to avoid jumps
+        # This prevents jumping to a far part of the path if the path self-intersects near the robot.
+        search_window_size = 20 # Number of points to check around current_target_idx
+        search_start_idx = max(0, current_target_idx - search_window_size // 2)
+        search_end_idx = min(num_path_points, current_target_idx + search_window_size // 2 + 1)
+        
+        if search_start_idx >= search_end_idx: # Path is too short for window, search whole path
+            search_start_idx = 0
+            search_end_idx = num_path_points
+
+        relevant_distances = distances[search_start_idx:search_end_idx]
+        if len(relevant_distances) > 0:
+            local_closest_idx = np.argmin(relevant_distances)
+            updated_target_idx = search_start_idx + local_closest_idx # Index in the full path
+        else: 
+            updated_target_idx = np.argmin(distances) # Fallback to global closest
+
+
+        # Simple progression: if robot is close to the updated_target_idx, try to advance it slightly.
+        # This helps move along the path rather than getting stuck on one point.
+        if distances[updated_target_idx] < 0.5 : # If close to the current "closest"
+            if updated_target_idx < num_path_points - 1:
+                # Heuristic: Advance if the next point is generally "further" or robot is very close
+                vec_robot_to_current = predefined_path[updated_target_idx] - robot_pos
+                vec_current_to_next = predefined_path[updated_target_idx + 1] - predefined_path[updated_target_idx]
+                # If robot is "behind" current target (dot product > 0 roughly) or very close, and next point exists
+                if np.dot(vec_robot_to_current, vec_current_to_next) > -0.1 or distances[updated_target_idx] < 0.1: # -0.1 to allow slight overshoot
+                     updated_target_idx = min(updated_target_idx + 1, num_path_points - 1)
+
+
+        final_target_idx = min(updated_target_idx, num_path_points - 1)
+
+        x_r = predefined_path[final_target_idx, 0]
+        y_r = predefined_path[final_target_idx, 1]
+
+        # Estimate theta_r (orientation of the path segment at x_r, y_r)
+        if final_target_idx < num_path_points - 1:
+            dx_path = predefined_path[final_target_idx + 1, 0] - x_r
+            dy_path = predefined_path[final_target_idx + 1, 1] - y_r
+        elif final_target_idx > 0 : 
+            dx_path = x_r - predefined_path[final_target_idx - 1, 0]
+            dy_path = y_r - predefined_path[final_target_idx - 1, 1]
+        else: 
+            dx_path = 1.0 
+            dy_path = 0.0
+        theta_r = np.arctan2(dy_path, dx_path)
+
+        # Estimate v_r, omega_r by looking ahead
+        lookahead_points = max(1, int(lookahead_time / dt_val))
+        future_idx1 = min(final_target_idx + lookahead_points, num_path_points - 1)
+        
+        v_r, omega_r, v_r_dot, omega_r_dot = 0.0, 0.0, 0.0, 0.0 # Initialize
+
+        if future_idx1 > final_target_idx: 
+            time_diff1 = (future_idx1 - final_target_idx) * dt_val
+            
+            x_curr_seg = predefined_path[final_target_idx, 0]
+            y_curr_seg = predefined_path[final_target_idx, 1]
+            x_fut1_seg = predefined_path[future_idx1, 0]
+            y_fut1_seg = predefined_path[future_idx1, 1]
+
+            dist_moved1 = np.sqrt((x_fut1_seg - x_curr_seg)**2 + (y_fut1_seg - y_curr_seg)**2)
+            v_r = dist_moved1 / time_diff1 if time_diff1 > 1e-6 else 0.0
+            
+            theta_curr_path_seg = theta_r 
+            if future_idx1 < num_path_points - 1:
+                theta_fut1_path_seg = np.arctan2(predefined_path[future_idx1+1,1]-y_fut1_seg, predefined_path[future_idx1+1,0]-x_fut1_seg)
+            elif future_idx1 > 0:
+                theta_fut1_path_seg = np.arctan2(y_fut1_seg-predefined_path[future_idx1-1,1], x_fut1_seg-predefined_path[future_idx1-1,0])
+            else:
+                theta_fut1_path_seg = theta_curr_path_seg
+            
+            d_theta1 = self._normalize_angle(theta_fut1_path_seg - theta_curr_path_seg)
+            omega_r = d_theta1 / time_diff1 if time_diff1 > 1e-6 else 0.0
+
+            future_idx2 = min(future_idx1 + lookahead_points, num_path_points - 1)
+            if future_idx2 > future_idx1:
+                time_diff2 = (future_idx2 - future_idx1) * dt_val
+                if time_diff2 > 1e-6:
+                    x_fut2_seg = predefined_path[future_idx2, 0]
+                    y_fut2_seg = predefined_path[future_idx2, 1]
+                    
+                    dist_moved2 = np.sqrt((x_fut2_seg - x_fut1_seg)**2 + (y_fut2_seg - y_fut1_seg)**2)
+                    v_r_fut1 = dist_moved2 / time_diff2
+                    v_r_dot = (v_r_fut1 - v_r) / time_diff1 # Approx over interval of v_r calculation
+
+                    if future_idx2 < num_path_points - 1:
+                        theta_fut2_path_seg = np.arctan2(predefined_path[future_idx2+1,1]-y_fut2_seg, predefined_path[future_idx2+1,0]-x_fut2_seg)
+                    elif future_idx2 > 0:
+                        theta_fut2_path_seg = np.arctan2(y_fut2_seg-predefined_path[future_idx2-1,1], x_fut2_seg-predefined_path[future_idx2-1,0])
+                    else:
+                        theta_fut2_path_seg = theta_fut1_path_seg
+
+                    d_theta2 = self._normalize_angle(theta_fut2_path_seg - theta_fut1_path_seg)
+                    omega_r_fut1 = d_theta2 / time_diff2
+                    omega_r_dot = (omega_r_fut1 - omega_r) / time_diff1
+        
+        # Update the controller's internal target index for the next call
+        # self.target_path_idx = final_target_idx # This should be done by the calling controller instance
+        return final_target_idx, x_r, y_r, theta_r, v_r, omega_r, v_r_dot, omega_r_dot
+
+
 class LyapunovKinematicController(Controller):
     """
-    Lyapunov-based kinematic controller (Outer Loop in Backstepping).
-    This controller computes desired linear velocity (v1_d) and angular velocity (omega_d)
-    to steer a robot along a predefined path. It assumes these velocities can be perfectly tracked
-    by a lower-level dynamic controller. Its design is often inspired by Lyapunov stability analysis
-    to ensure convergence of path following errors.
+    Lyapunov-based Kinematic Controller for a differential drive robot.
+    Uses Kanayama-like error definitions.
+    Outputs desired linear (v1) and angular (omega) velocities.
     """
-    def __init__(self, k_forward=1.0, k_theta=2.0, k_lateral_gain_factor=1.0,
-                 v_ref=1.0, omega_max=np.pi, lookahead_dist=0.5):
-        """
-        Initializes the LyapunovKinematicController.
-
-        :param k_forward: Gain for correcting error in the forward direction of the robot (kf).
-                          Influences how quickly the robot reduces distance error along its heading.
-        :param k_theta: Gain for correcting orientation error (k_theta or ktt).
-                        Also scales the lateral error correction component.
-        :param k_lateral_gain_factor: Additional factor to scale the lateral error correction term.
-                                     Allows independent tuning of the robot's aggressiveness in
-                                     steering towards the path versus correcting its heading.
-        :param v_ref: Reference forward velocity when on the path and aligned (v_r).
-        :param omega_max: Maximum allowable commanded angular velocity (saturation limit).
-        :param lookahead_dist: Lookahead distance to select the target point on the path.
-                               A larger lookahead can smooth the approach but might cut corners.
-        """
-        super().__init__()
-        self.kf = k_forward
-        self.ktt = k_theta
-        self.k_lat_factor = k_lateral_gain_factor
-        self.v_ref = v_ref
-        self.omega_max = omega_max
-        
-        if lookahead_dist <= 0:
-             print("Warning: Kinematic controller lookahead_dist should be positive. Setting to a small default (0.1).")
-             self.lookahead_dist = 0.1
-        else:
-            self.lookahead_dist = lookahead_dist
-
-        self.closest_index = 0 # Memoization for the index of the closest path point to speed up search.
-        self.prev_v1d = 0.0    # Stores the previously commanded v1_d for external derivative calculation.
-        self.prev_omegad = 0.0 # Stores the previously commanded omega_d.
-        self.finished_flag = False # Flag indicating if the robot has reached the end of the path.
-
-    def find_target_point(self, robot_pos_tuple, path_coords):
-        """
-        Finds a suitable target point on the path based on lookahead distance
-        and calculates the tangent (orientation) of the path at that target point.
-
-        :param robot_pos_tuple: Current position of the robot (x, y) as a tuple or list.
-        :param path_coords: The predefined path as a numpy array of shape (N, 2).
-        :return: A tuple (target_point, theta_path_tangent).
-                 target_point: (x_d, y_d) coordinates of the lookahead point.
-                 theta_path_tangent: Orientation (angle in radians) of the path at the target point.
-                 Returns (None, None) if no valid path or target can be found.
-        """
-        current_pos_np = np.array(robot_pos_tuple) # Ensure numpy array for vector operations
-        
-        # Calculate squared distances to all path points for finding the closest point
-        # Using squared distances is slightly more efficient as it avoids sqrt,
-        # but for finding the minimum, the actual distance or squared distance gives the same index.
-        # distances_sq_to_path = np.sum((path_coords - current_pos_np)**2, axis=1) # Alternative
-
-        distances_to_path = np.linalg.norm(path_coords - current_pos_np, axis=1)
-
-        # Search for the closest point in a limited window around the previous closest_index for efficiency.
-        search_radius = 20 # Number of points to search forward and backward from self.closest_index.
-        start_idx = max(0, self.closest_index - search_radius)
-        end_idx = min(len(path_coords), self.closest_index + search_radius + 1)
-        
-        path_segment_for_closest = path_coords[start_idx:end_idx]
-
-        if path_segment_for_closest.shape[0] == 0: # Path is very short or empty.
-             if len(path_coords) > 0: # If path exists, search the whole path.
-                 self.closest_index = np.argmin(distances_to_path)
-             else: # No path available.
-                 return None, None 
-        else: # Search within the segment.
-             relative_closest_idx = np.argmin(np.linalg.norm(path_segment_for_closest - current_pos_np, axis=1))
-             self.closest_index = start_idx + relative_closest_idx
-
-        # Find the lookahead point: search forward from the closest_index until
-        # a point is found that is at least lookahead_dist away from the robot's current position.
-        target_idx = self.closest_index
-        found_lookahead = False
-        for i in range(self.closest_index, len(path_coords)):
-            dist_to_candidate_point = np.linalg.norm(path_coords[i] - current_pos_np)
-            if dist_to_candidate_point >= self.lookahead_dist:
-                target_idx = i
-                found_lookahead = True
-                break
-        if not found_lookahead: # If no such point is found (e.g., robot is near the end of the path)
-            target_idx = len(path_coords) - 1 # Target the last point of the path.
-
-        target_point_coords = path_coords[target_idx]
-
-        # Check for path completion: if the current target is the last point on the path
-        # and the robot is close to this last point, set the finished_flag.
-        dist_to_final_path_point = np.linalg.norm(path_coords[-1] - current_pos_np)
-        # Threshold for being "close enough" to the end. Should be less than lookahead_dist.
-        finish_threshold = self.lookahead_dist * 0.3 
-        if target_idx == len(path_coords) - 1 and dist_to_final_path_point < finish_threshold:
-            self.finished_flag = True
-
-        # Calculate the tangent (orientation) of the path at the target_point.
-        # This is approximated using the vector between the target_point and the preceding point.
-        if target_idx > 0: # If target is not the first point.
-            path_segment_vector = path_coords[target_idx] - path_coords[target_idx - 1]
-        elif len(path_coords) > 1: # If target is the first point, use the segment to the next point.
-            path_segment_vector = path_coords[1] - path_coords[0]
-        else: # Path has only one point.
-            path_segment_vector = np.array([1.0, 0.0]) # Assume a default horizontal tangent.
-
-        # Handle cases where path_segment_vector might be zero (e.g., duplicate points in path definition).
-        path_segment_norm = np.linalg.norm(path_segment_vector)
-        if path_segment_norm < 1e-6: # If vector is (near) zero length.
-            # Try using segment *after* target point if possible and not at the very end.
-            if target_idx + 1 < len(path_coords):
-                 path_segment_vector = path_coords[target_idx+1] - path_coords[target_idx]
-                 path_segment_norm = np.linalg.norm(path_segment_vector)
-            
-            if path_segment_norm < 1e-6: # If still zero, default to horizontal.
-                path_segment_vector = np.array([1.0, 0.0])
-
-        theta_path_tangent_at_target = np.arctan2(path_segment_vector[1], path_segment_vector[0])
-
-        return target_point_coords, theta_path_tangent_at_target
-
-    def compute_desired_velocities(self, robot_state, predefined_path):
-        """
-        Computes desired kinematic velocities (v1_d, omega_d) for path following.
-        This is the primary method called by an external agent (e.g., a dynamic controller or simulation).
-
-        :param robot_state: Current state of the robot (x, y, theta, v1, omega).
-        :param predefined_path: Target path as a numpy array (N, 2).
-        :return: Tuple (v1_d, omega_d, errors, finished_flag)
-                 v1_d: Desired linear velocity (m/s).
-                 omega_d: Desired angular velocity (rad/s).
-                 errors: Tuple (error_forward, error_lateral, error_theta).
-                 finished_flag: Boolean, true if the end of the path is considered reached.
-        """
-        if self.finished_flag: # If path completion was previously signaled.
-             return 0.0, 0.0, (0.0, 0.0, 0.0), True
-
-        x_robot, y_robot, theta_robot, _, _ = robot_state # Unpack current robot pose.
-        current_robot_pos = (x_robot, y_robot)
-
-        if predefined_path is None or len(predefined_path) < 2: # Path needs at least 2 points for tangent.
-            print("Kinematic Controller: Path is invalid (None or < 2 points).")
-            self.finished_flag = True
-            return 0.0, 0.0, (0.0, 0.0, 0.0), True
-
-        # Find the target point on the path and its tangent.
-        target_point, theta_path_tangent = self.find_target_point(current_robot_pos, predefined_path)
-
-        # The find_target_point method might set self.finished_flag. Check again.
-        if self.finished_flag:
-             self.prev_v1d = 0.0 # Ensure desired velocities are zero for derivative calculation.
-             self.prev_omegad = 0.0
-             return 0.0, 0.0, (0.0, 0.0, 0.0), True
-
-        if target_point is None: # Safeguard if target finding failed.
-            print("Kinematic Controller: Failed to find a valid target point.")
-            self.finished_flag = True
-            return 0.0, 0.0, (0.0, 0.0, 0.0), True
-
-        x_target, y_target = target_point
-
-        # --- Error Calculation ---
-        # Calculate errors in the world frame.
-        error_x_world = x_target - x_robot
-        error_y_world = y_target - y_robot
-
-        # Transform world-frame errors to the robot's local frame.
-        cos_theta_robot = np.cos(theta_robot)
-        sin_theta_robot = np.sin(theta_robot)
-        
-        # error_forward: Error along the robot's current heading.
-        error_forward = error_x_world * cos_theta_robot + error_y_world * sin_theta_robot
-        # error_lateral: Error perpendicular to the robot's current heading (to the left is positive).
-        error_lateral = -error_x_world * sin_theta_robot + error_y_world * cos_theta_robot
-        
-        # Orientation error: Difference between the path's tangent orientation and the robot's current orientation.
-        error_theta = theta_path_tangent - theta_robot
-        # Normalize the orientation error to the range [-pi, pi].
-        error_theta = (error_theta + np.pi) % (2 * np.pi) - np.pi
-
-        # --- Kinematic Control Law (Lyapunov-inspired structure) ---
-        # Desired linear velocity (v1_d):
-        # Consists of a term to match reference speed along path (v_ref * cos(error_theta))
-        # and a term to reduce forward error (self.kf * error_forward).
-        v1_d = self.v_ref * np.cos(error_theta) + self.kf * error_forward
-
-        # Desired angular velocity (omega_d):
-        # Combines a term to correct lateral error (proportional to v_ref * sinc(error_theta) * error_lateral)
-        # and a term to correct orientation error (proportional to error_theta).
-        # The sinc(error_theta) term is crucial for nonholonomic robots, ensuring smooth steering.
-        effective_lateral_gain = self.ktt * self.k_lat_factor
-        omega_d = effective_lateral_gain * self.v_ref * self._safe_sinc(error_theta) * error_lateral \
-                  + self.ktt * error_theta
-
-        # Apply saturation to the commanded angular velocity.
-        omega_d = np.clip(omega_d, -self.omega_max, self.omega_max)
-        
-        # Optional: Saturate linear velocity (e.g., to prevent excessive speeds or allow reverse).
-        # max_abs_linear_vel = 1.5 * self.v_ref
-        # v1_d = np.clip(v1_d, -max_abs_linear_vel, max_abs_linear_vel) # Example if reversing is allowed.
-        # v1_d = np.clip(v1_d, 0, max_abs_linear_vel) # If only forward motion.
-
-        # Store the computed desired velocities for use by an outer loop (e.g., for derivative calculation).
-        self.prev_v1d = v1_d
-        self.prev_omegad = omega_d
-
-        current_errors = (error_forward, error_lateral, error_theta)
-        return v1_d, omega_d, current_errors, self.finished_flag
-
-
-# --- Adaptive Dynamic Controller ---
-class AdaptiveDynamicController(Controller):
-    """
-    Adaptive dynamic controller (Inner Loop in Backstepping).
-    This controller computes motor torques to make the robot's actual velocities (v1, omega)
-    track the desired velocities (v1_d, omega_d) provided by a kinematic controller.
-    It uses an adaptive law to estimate the robot's dynamic parameters (mass 'm' and inertia 'I').
-    The control structure is based on adaptive backstepping principles, often involving:
-    1. A feedforward term based on estimated parameters and desired accelerations.
-    2. A feedback term to correct velocity tracking errors.
-    3. A robustifying term to handle uncertainties and disturbances.
-    4. An adaptation law to update parameter estimates.
-    """
-    def __init__(self, dt, wheel_radius, wheel_width,
-                 kinematic_controller: LyapunovKinematicController,
-                 initial_p_hat=np.array([1.0, 0.1]), 
-                 gamma_p=np.diag([1.0, 0.1]),       
-                 kd=np.diag([10.0, 5.0]),           
-                 disturbance_bound=0.5,             
-                 use_robust_term=True,
-                 min_params = np.array([0.1, 0.01]), 
-                 max_params = np.array([100.0, 50.0]) 
-                 ):
-        """
-        Initializes the AdaptiveDynamicController.
-
-        :param dt: Simulation time step (seconds). Critical for numerical differentiation and integration.
-        :param wheel_radius: Radius of the robot's wheels (r) in meters.
-        :param wheel_width: Distance between the centers of the two driven wheels (W) in meters.
-        :param kinematic_controller: An instance of a kinematic controller (e.g., LyapunovKinematicController)
-                                     that provides the desired velocities (v1_d, omega_d).
-        :param initial_p_hat: Initial estimate for the parameter vector p_hat = [m_hat, I_hat]^T.
-        :param gamma_p: Adaptation gain matrix (typically diagonal, positive definite) for p_hat.
-                        Controls the speed of parameter adaptation.
-        :param kd: Feedback gain matrix (typically diagonal, positive definite) for velocity error (Kd).
-                   Determines the responsiveness to velocity tracking errors.
-        :param disturbance_bound: Assumed upper bound (d_B) for external disturbances and unmodeled dynamics.
-                                  Used in the robust control term.
-        :param use_robust_term: Boolean flag to enable or disable the robustifying term (e.g., sgn(eta) or tanh(eta)).
-        :param min_params: Minimum allowable values for parameter estimates [m_min, I_min]. Used for projection.
-        :param max_params: Maximum allowable values for parameter estimates [m_max, I_max]. Used for projection.
-        """
-        super().__init__()
-        if dt <= 0:
-            raise ValueError("Time step dt must be positive for AdaptiveDynamicController.")
+    def __init__(self, k_x, k_y, k_theta, dt=0.02):
+        super().__init__() # Initializes self.target_path_idx = 0
+        self.k_x = k_x # Gain for longitudinal error e_x_local
+        self.k_y = k_y # Gain for lateral error e_y_local (often scaled by v_r)
+        self.k_theta = k_theta # Gain for orientation error e_theta_local
         self.dt = dt
-        self.kinematic_controller = kinematic_controller
-
-        self.p_hat = np.array(initial_p_hat, dtype=float) # Parameter estimate vector [m_hat, I_hat]^T
-        self.Gamma_p = np.array(gamma_p, dtype=float)     # Adaptation gain matrix Gamma_p
-        self.Kd = np.array(kd, dtype=float)               # Velocity error feedback gain matrix Kd
-        self.dB = disturbance_bound                       # Assumed disturbance bound d_B
-        self.use_robust_term = use_robust_term
-
-        self.min_params = np.array(min_params, dtype=float)
-        self.max_params = np.array(max_params, dtype=float)
-        if np.any(self.min_params <= 1e-3): # Parameters like mass/inertia should be strictly positive
-            print("Warning: min_params in AdaptiveDynamicController contains values very close to or <= zero. "
-                  "They should be small positive numbers.")
-        if np.any(self.max_params <= self.min_params):
-            raise ValueError("max_params must be strictly greater than min_params for all elements.")
-
-        # Precompute B2_inv matrix: transforms generalized forces [F_v1_cmd, F_omega_cmd] 
-        # into wheel torques [tau_right_cmd, tau_left_cmd].
-        # The robot's dynamic equation is often M2 * acc_actual = generalized_forces_applied.
-        # Generalized forces from wheel torques: [F_v1; F_omega] = B2_matrix_form @ [tau_r; tau_l]
-        # where F_v1 = (1/r)*(tau_r + tau_l), F_omega = (W/2r)*(tau_r - tau_l).
-        # We need to calculate [tau_r; tau_l] = B2_inv @ [F_v1_cmd; F_omega_cmd].
-        r = wheel_radius
-        W = wheel_width
-        if W == 0: # Should have been caught by Simulation, but good to check.
-            raise ValueError("Wheel width (W) cannot be zero in AdaptiveDynamicController.")
-        
-        # B2_matrix_form = (1/r) * np.array([[1, 1], [W/2, -W/2]])
-        # self.B2_inv = np.linalg.inv(B2_matrix_form)
-        # Direct calculation of B2_inv:
-        # tau_r = (r/2)*F_v1_cmd + (r/W)*F_omega_cmd
-        # tau_l = (r/2)*F_v1_cmd - (r/W)*F_omega_cmd
-        self.B2_inv = np.array([
-            [r/2.0, r/W],    # Row for tau_right
-            [r/2.0, -r/W]    # Row for tau_left
-        ])
-
-        # Store previous desired kinematic velocities (v1d_kin, omegad_kin)
-        # for numerical differentiation to get vd_dot.
-        self.prev_v1d_kin_for_deriv = 0.0
-        self.prev_omegad_kin_for_deriv = 0.0
-        
-        self.first_run = True # Flag to correctly initialize prev_..._for_deriv on the first call.
+        self.prev_v1_d = 0.0
+        self.prev_omega_d = 0.0
 
     def compute_control(self, robot_state, predefined_path):
-        """
-        Computes adaptive torque commands for the robot's wheels.
+        x, y, theta, _, _ = robot_state # Actual v1, omega not used by pure kinematic controller
 
-        :param robot_state: Current full state of the robot (x, y, theta, v1_actual, omega_actual).
-        :param predefined_path: Target path (N, 2) for the kinematic controller.
-        :return: Tuple (tau_left_cmd, tau_right_cmd, status_dict)
-                 tau_left_cmd: Commanded torque for the left wheel.
-                 tau_right_cmd: Commanded torque for the right wheel.
-                 status_dict: Dictionary containing intermediate values for analysis and debugging,
-                              e.g., {'eta', 'p_hat', 'kin_errors', 'v_d', 'vd_dot', 'tau_bar_cmd'}.
-        """
-        _, _, _, v1_actual, omega_actual = robot_state # Unpack current actual velocities
-        v_actual = np.array([v1_actual, omega_actual]) # Actual velocity vector [v1, omega]
+        # Get reference point on path and its properties
+        updated_target_idx, x_r, y_r, theta_r, v_r, omega_r, _, _ = \
+            self._get_path_information(x, y, theta, predefined_path, self.target_path_idx, dt_val=self.dt)
+        self.target_path_idx = updated_target_idx # Update controller's internal state
 
-        # 1. Get desired kinematic velocities (v_d) from the kinematic controller (outer loop).
-        v1d_kin, omegad_kin, kin_errors_tuple, finished_kin = \
-            self.kinematic_controller.compute_desired_velocities(robot_state, predefined_path)
-        v_d = np.array([v1d_kin, omegad_kin]) # Desired velocity vector [v1_d, omega_d]
-
-        # Initialize derivative states on the first run or if kinematic controller resets/finishes.
-        # This prevents a large spike in vd_dot if v_d suddenly goes to zero.
-        if self.first_run or (v1d_kin == 0.0 and omegad_kin == 0.0 and 
-                              (self.prev_v1d_kin_for_deriv != 0.0 or self.prev_omegad_kin_for_deriv != 0.0)):
-            self.prev_v1d_kin_for_deriv = v1d_kin
-            self.prev_omegad_kin_for_deriv = omegad_kin
-            self.first_run = False
-
-        # If kinematic controller signals path completion, command zero torques.
-        if finished_kin:
-             eta_final = v_actual - v_d # Velocity error using the final (likely zero) v_d
-             status_final = {'eta': eta_final, 'p_hat': self.p_hat.copy(), 
-                             'kin_errors': kin_errors_tuple, 'v_d': v_d.copy(),
-                             'vd_dot': np.zeros_like(v_d), 'tau_bar_cmd': np.zeros_like(v_d)}
-             # Ensure derivatives are zero for the next potential call (though unlikely if finished)
-             self.prev_v1d_kin_for_deriv = 0.0
-             self.prev_omegad_kin_for_deriv = 0.0
-             return 0.0, 0.0, status_final
-
-        # 2. Estimate derivative of desired velocities (vd_dot = [v1d_dot, omegad_dot]^T).
-        # Using simple numerical differentiation (backward difference).
-        # More sophisticated filtering or estimation could be used here for noisy v_d signals.
-        v1d_dot_est = (v1d_kin - self.prev_v1d_kin_for_deriv) / self.dt
-        omegad_dot_est = (omegad_kin - self.prev_omegad_kin_for_deriv) / self.dt
+        # Compute Kanayama-like errors (errors in robot's local frame)
+        e_x_global = x_r - x
+        e_y_global = y_r - y
         
-        # Update stored previous desired velocities for the next iteration's derivative calculation.
-        self.prev_v1d_kin_for_deriv = v1d_kin
-        self.prev_omegad_kin_for_deriv = omegad_kin
+        e_x_local = e_x_global * np.cos(theta) + e_y_global * np.sin(theta) # Error along robot's x-axis
+        e_y_local = -e_x_global * np.sin(theta) + e_y_global * np.cos(theta) # Error along robot's y-axis
+        e_theta_local = self._normalize_angle(theta_r - theta) # Orientation error
+
+        # Kanayama control law
+        v1_d = v_r * np.cos(e_theta_local) + self.k_x * e_x_local
+        # A common form for omega_d:
+        # omega_d = omega_r + self.k_y * v_r * e_y_local + self.k_theta * e_theta_local
+        # Original Kanayama uses sinc(e_theta_local) for the e_y_local term:
+        omega_d = omega_r + self.k_y * v_r * self._safe_sinc(e_theta_local) * e_y_local + self.k_theta * e_theta_local
+        # Another variant for the last term:
+        # omega_d = omega_r + self.k_y * v_r * e_y_local + self.k_theta * v_r * self._safe_sinc(e_theta_local) * e_theta_local
+
+        # Estimate derivatives of v1_d, omega_d numerically for output
+        v1_d_dot = (v1_d - self.prev_v1_d) / self.dt
+        omega_d_dot = (omega_d - self.prev_omega_d) / self.dt
+
+        self.prev_v1_d = v1_d
+        self.prev_omega_d = omega_d
+
+        status_dict = {
+            'kin_errors': (e_x_local, e_y_local, e_theta_local),
+            'v_d': np.array([v1_d, omega_d]),
+            'vd_dot': np.array([v1_d_dot, omega_d_dot]), # Estimated derivatives
+            'ref_pose': (x_r, y_r, theta_r),
+            'ref_vel': (v_r, omega_r),
+            'target_path_idx': self.target_path_idx
+        }
+        # Output is desired velocities and the status dictionary
+        return np.array([v1_d, omega_d]), status_dict
+
+
+class BacksteppingDynamicController(Controller):
+    """
+    Backstepping-based Dynamic Controller for a differential drive robot.
+    Integrates kinematic control objectives with dynamic compensation using adaptive backstepping.
+    Estimates robot's effective mass (m_eff) and inertia (I_eff).
+    """
+    def __init__(self, wheel_radius, wheel_width,
+                 k_v, k_omega, k_delta,  # Kinematic gains for internal virtual controller
+                 Kd, K_bs,                # Dynamic and Backstepping gain matrices (or lists for diagonal)
+                 gamma_p, initial_p_hat,  # Adaptation gain matrix and initial parameter estimates [m_eff, I_eff]
+                 dB=0.1, use_robust_term=True, # Robustness term parameters
+                 min_params=None, max_params=None, # Bounds for parameter estimates
+                 dt=0.02):
+        super().__init__() # Initializes self.target_path_idx = 0
+        self.r = wheel_radius
+        self.W = wheel_width
+        self.dt = dt
+
+        # Kinematic control parameters (for generating v_d, omega_d internally)
+        self.k_v = k_v         # Gain for e1 (longitudinal error) in v1_d
+        self.k_omega = k_omega # Gain for e2 (lateral error, scaled by v_r) in omega_d
+        self.k_delta = k_delta # Gain for e3 (orientation error, often with sinc) in omega_d
         
-        vd_dot_est = np.array([v1d_dot_est, omegad_dot_est]) # Desired acceleration vector
+        # Dynamic control parameters
+        self.Kd = np.diag(Kd) if isinstance(Kd, (list, tuple)) else Kd # Dynamic feedback gain matrix for velocity error eta
+        self.K_bs = np.diag(K_bs) if isinstance(K_bs, (list, tuple)) else K_bs # Backstepping gain matrix for J_bs term
 
-        # 3. Calculate velocity tracking error (eta = v_actual - v_desired).
-        eta = v_actual - v_d
+        # Adaptive control parameters for p_hat = [m_eff, I_eff]^T
+        self.p_hat = np.array(initial_p_hat, dtype=float).reshape(-1, 1) if initial_p_hat is not None else np.array([[10.0], [1.0]])
+        if self.p_hat.shape != (2,1): raise ValueError("initial_p_hat must be for [m_eff, I_eff]")
+        
+        self.gamma_p = np.diag(gamma_p) if isinstance(gamma_p, (list, tuple)) else gamma_p # Adaptation gain matrix
 
-        # 4. Calculate Regressor Matrix Yc.
-        # The robot dynamics (simplified) are M2 * v_actual_dot = tau_bar_applied.
-        # The feedforward part of the control is often Yc(vd_dot) * p_hat, aiming to replicate M2_hat * vd_dot.
-        # If M2 = diag(m, I), then M2_hat * vd_dot = [m_hat*v1d_dot; I_hat*omegad_dot].
-        # This can be written as Yc @ p_hat where p_hat = [m_hat, I_hat]^T and Yc = diag(vd_dot).
-        Yc = np.diag(vd_dot_est)
+        # Robust term parameters
+        self.use_robust_term = use_robust_term
+        self.dB = dB # Gain for the robust term (scales smoothed sgn(eta))
 
-        # 5. Update Parameter Estimates (p_hat = [m_hat, I_hat]^T) using the adaptation law.
-        # The standard adaptation law is p_hat_dot = -Gamma_p * Yc^T * eta.
-        p_hat_dot = -self.Gamma_p @ Yc.T @ eta
+        # Parameter projection bounds
+        default_min = np.array([[1e-3],[1e-4]]) # Small positive defaults
+        default_max = np.array([[100.0],[20.0]])
+        self.min_params = np.array(min_params, dtype=float).reshape(-1,1) if min_params is not None else default_min
+        self.max_params = np.array(max_params, dtype=float).reshape(-1,1) if max_params is not None else default_max
+        if self.min_params.shape != (2,1) or self.max_params.shape != (2,1): raise ValueError("min/max_params must be for [m_eff, I_eff]")
 
-        # Integrate p_hat_dot using Euler method to get p_hat for the next step.
+
+        # Transformation matrix B2_inv: maps generalized forces [Fx_body; Mz_body] to wheel torques [tau_R; tau_L]
+        self.B2_inv = np.array([[self.r / 2.0, self.r / self.W],
+                                [self.r / 2.0, -self.r / self.W]])
+        
+        # For numerical differentiation of desired kinematic velocities
+        self.prev_v1_d_kin = 0.0
+        self.prev_omega_d_kin = 0.0
+
+    def _kinematic_control_law(self, robot_state_kin, predefined_path_kin):
+        """
+        Internal kinematic controller to generate virtual controls (v1_d, omega_d)
+        and their time derivatives.
+        Errors e1, e2, e3 are defined in the robot's local frame.
+        e1: error along robot's x-axis (forward/longitudinal)
+        e2: error along robot's y-axis (lateral)
+        e3: orientation error
+        """
+        x, y, theta, _, _ = robot_state_kin
+
+        updated_target_idx, x_r, y_r, theta_r, v_r, omega_r, v_r_dot, omega_r_dot = \
+            self._get_path_information(x, y, theta, predefined_path_kin, self.target_path_idx, dt_val=self.dt)
+        self.target_path_idx = updated_target_idx # Update controller's path tracking index
+
+        # Kinematic errors in robot's local frame
+        e1 = (x_r - x) * np.cos(theta) + (y_r - y) * np.sin(theta) 
+        e2 = -(x_r - x) * np.sin(theta) + (y_r - y) * np.cos(theta) 
+        e3 = self._normalize_angle(theta_r - theta)
+
+        # Virtual control laws (desired velocities)
+        v1_d = v_r * np.cos(e3) + self.k_v * e1
+        # Common form for omega_d, using sinc for stability with e3 in Lyapunov function
+        omega_d = omega_r + self.k_omega * v_r * e2 + self.k_delta * v_r * self._safe_sinc(e3) * e3
+        # Alternative without sinc if Lyapunov function uses e.g. (1-cos(e3)):
+        # omega_d = omega_r + self.k_omega * v_r * e2 * self._safe_sinc(e3) + self.k_delta * e3 
+
+        # Numerical differentiation for derivatives of virtual controls
+        v1_d_dot = (v1_d - self.prev_v1_d_kin) / self.dt
+        omega_d_dot = (omega_d - self.prev_omega_d_kin) / self.dt
+
+        self.prev_v1_d_kin = v1_d
+        self.prev_omega_d_kin = omega_d
+
+        kin_errors_tuple = (e1, e2, e3)
+        desired_velocities_virtual = np.array([v1_d, omega_d]).reshape(2,1)
+        desired_accelerations_virtual = np.array([v1_d_dot, omega_d_dot]).reshape(2,1)
+        ref_pose_tuple = (x_r, y_r, theta_r)
+        ref_vel_tuple = (v_r, omega_r) # Reference v_r, omega_r from path
+
+        return kin_errors_tuple, desired_velocities_virtual, desired_accelerations_virtual, ref_pose_tuple, ref_vel_tuple
+
+    def _compute_regressor_Yc(self, v1_actual, omega_actual, v1_d_dot_est, omega_d_dot_est):
+        """
+        Computes the regressor matrix Yc for the adaptive law, assuming p_hat = [m_eff, I_eff]^T.
+        This corresponds to a simplified dynamic model M_bar * nu_dot = tau_bar, where M_bar = diag(m_eff, I_eff).
+        If Coriolis or complex friction terms were included, Yc would be more complex.
+        """
+        # Yc should be 2x2 for p_hat = [m_eff, I_eff]^T
+        Yc = np.array([[v1_d_dot_est, 0.0],
+                       [0.0, omega_d_dot_est]])
+        return Yc
+
+    def compute_backstepping_term(self, kin_errors_tuple, desired_velocities_virtual):
+        """
+        Computes the backstepping term J_bs (or K_bs @ J_bs_derived).
+        This term arises from the derivative of the kinematic Lyapunov function V_kin
+        and links kinematic objectives to dynamic control.
+        The exact form depends on the chosen V_kin and kinematic control laws.
+
+        A common derivation for V_kin = 0.5*(e1^2 + e2^2 + e3^2/lambda_coeff) yields
+        terms in V_kin_dot like -e1*eta_v1 and (-e3/lambda_coeff)*eta_omega.
+        So, the derived J_bs_components would be [-e1, -e3/lambda_coeff]^T.
+        The self.K_bs matrix then scales these components.
+        """
+        e1, e2, e3 = kin_errors_tuple
+        # v1_d = desired_velocities_virtual[0,0] # May be needed for some J_bs forms
+
+        # Derived components of J_bs based on typical Lyapunov analysis for (e1,e2,e3) tracking
+        j_bs_v1_component = e1 
+        j_bs_omega_component = e3 # This is a common simplification. A specific lambda_coeff might appear.
+                                   # For example, if V_kin has e3^2 / k_some_gain, then this might be -e3 / k_some_gain.
+
+        # Apply K_bs gains. K_bs is diagonal: [[k_bs_v1_link, 0], [0, k_bs_omega_link]]
+        # The term to be subtracted in the dynamic law is K_bs @ [j_bs_v1_comp; j_bs_omega_comp]
+        j_bs1_final = self.K_bs[0,0] * j_bs_v1_component
+        j_bs2_final = self.K_bs[1,1] * j_bs_omega_component
+        
+        return np.array([j_bs1_final, j_bs2_final]).reshape(2,1)
+
+    def compute_control(self, robot_state, predefined_path):
+        x, y, theta, v1_actual, omega_actual = robot_state
+        actual_velocities = np.array([v1_actual, omega_actual]).reshape(2,1)
+
+        # 1. Kinematic Layer: Generate desired virtual velocities (v_d) and their derivatives (vd_dot_est)
+        kin_errors_tuple, v_d, vd_dot_est, ref_pose, ref_vel = \
+            self._kinematic_control_law(robot_state, predefined_path)
+
+        # 2. Compute Velocity Error (eta)
+        eta = actual_velocities - v_d # Velocity tracking error
+
+        # 3. Compute Regressor Yc for adaptive law
+        Yc = self._compute_regressor_Yc(v1_actual, omega_actual, vd_dot_est[0,0], vd_dot_est[1,0])
+        
+        # 4. Adaptation Law for p_hat = [m_eff, I_eff]^T
+        # p_hat_dot = Gamma_p * Yc^T * eta
+        p_hat_dot = self.gamma_p @ Yc.T @ eta
         self.p_hat += p_hat_dot * self.dt
 
-        # Apply projection: ensure parameter estimates stay within predefined bounds.
-        self.p_hat = np.maximum(self.p_hat, self.min_params)
-        self.p_hat = np.minimum(self.p_hat, self.max_params)
+        # Parameter Projection
+        self.p_hat = np.clip(self.p_hat, self.min_params, self.max_params)
 
-        # 6. Calculate Robust Control Term (u_robust).
-        # This term helps to compensate for uncertainties, disturbances, and modeling errors.
-        # Typically u_robust = d_B * sgn(eta), but a smoothed version (tanh) is used to reduce chattering.
+        # 5. Robust Term u_robust (optional, for unmodeled dynamics/disturbances)
+        u_robust = np.zeros((2,1))
         if self.use_robust_term and self.dB > 0:
-            epsilon_boundary_layer = 0.05 # Thickness of the boundary layer for tanh smoothing.
-            tanh_argument = eta / epsilon_boundary_layer
-            # Clip argument to prevent tanh from reaching exactly +/-1, which can be problematic.
-            tanh_argument = np.clip(tanh_argument, -10, 10) # tanh(-10) is very close to -1.
+            epsilon_robust_smoothing = 0.01 # Small value for tanh smoothing layer
+            tanh_argument = eta / epsilon_robust_smoothing 
+            tanh_argument = np.clip(tanh_argument, -10, 10) # Avoid large values for tanh
+            sgn_eta_smoothed = np.tanh(tanh_argument)
+            u_robust = self.dB * sgn_eta_smoothed # self.dB is the gain for the robust term
+
+        # 6. Compute the Backstepping Term (J_bs or K_bs @ J_bs_derived)
+        backstepping_term_val = self.compute_backstepping_term(kin_errors_tuple, v_d)
+
+        # 7. Calculate Commanded Generalized Forces (tau_bar_cmd = [Fx_bar_cmd, Mz_bar_cmd]^T)
+        # Standard adaptive backstepping control law:
+        # tau_bar_cmd = Yc @ p_hat - Kd @ eta - u_robust - backstepping_term_val
+        # Yc @ p_hat: Adaptive feedforward (model compensation: M_hat*vd_dot + C_hat*v_d + F_hat)
+        # -Kd @ eta: Feedback for velocity error stabilization
+        # -u_robust: Robustness against uncertainties
+        # -backstepping_term_val: Term from kinematic Lyapunov analysis to ensure overall stability
+        feedforward_term = Yc @ self.p_hat
+        feedback_term = self.Kd @ eta 
+
+        tau_bar_cmd = feedforward_term - feedback_term - u_robust - backstepping_term_val
+
+        # 8. Convert generalized forces command to actual wheel torques
+        wheel_torques_cmd = self.B2_inv @ tau_bar_cmd
+        tau_right_cmd, tau_left_cmd = wheel_torques_cmd[0,0], wheel_torques_cmd[1,0]
+
+        status_dict = {
+            'eta': eta.flatten().copy(),
+            'p_hat': self.p_hat.flatten().copy(),
+            'kin_errors': kin_errors_tuple, # (e1, e2, e3)
+            'v_d': v_d.flatten().copy(), # Desired virtual velocities [v1_d, omega_d]
+            'vd_dot': vd_dot_est.flatten().copy(), # Estimated derivatives
+            'tau_bar_cmd': tau_bar_cmd.flatten().copy(),
+            'u_robust': u_robust.flatten().copy(),
+            'backstepping_term': backstepping_term_val.flatten().copy(),
+            'ref_pose': ref_pose, # (x_r, y_r, theta_r)
+            'ref_vel': ref_vel,   # (v_r, omega_r)
+            'target_path_idx': self.target_path_idx
+        }
+        return np.array([tau_right_cmd, tau_left_cmd]), status_dict
+
+
+class AdaptiveDynamicController(Controller):
+    """
+    Adaptive Dynamic Controller for tracking externally provided desired velocities.
+    Assumes v_d, omega_d, and their derivatives are set via `set_desired_velocities`.
+    Adapts for robot parameters m_eff and I_eff.
+    """
+    def __init__(self, wheel_radius, wheel_width,
+                 Kd, gamma_p, initial_p_hat,              
+                 dB=0.1, use_robust_term=True,
+                 min_params=None, max_params=None,     
+                 dt=0.02):
+        super().__init__()
+        self.r = wheel_radius
+        self.W = wheel_width
+        self.dt = dt
+
+        self.Kd = np.diag(Kd) if isinstance(Kd, (list, tuple)) else Kd 
+        self.p_hat = np.array(initial_p_hat, dtype=float).reshape(-1,1) if initial_p_hat is not None else np.array([[10.0], [1.0]])
+        if self.p_hat.shape != (2,1): raise ValueError("initial_p_hat must be for [m_eff, I_eff]")
+
+        self.gamma_p = np.diag(gamma_p) if isinstance(gamma_p, (list, tuple)) else gamma_p
+        self.use_robust_term = use_robust_term
+        self.dB = dB 
+
+        default_min = np.array([[1e-3],[1e-4]])
+        default_max = np.array([[100.0],[20.0]])
+        self.min_params = np.array(min_params, dtype=float).reshape(-1,1) if min_params is not None else default_min
+        self.max_params = np.array(max_params, dtype=float).reshape(-1,1) if max_params is not None else default_max
+        if self.min_params.shape != (2,1) or self.max_params.shape != (2,1): raise ValueError("min/max_params must be for [m_eff, I_eff]")
+
+
+        self.B2_inv = np.array([[self.r / 2.0, self.r / self.W],
+                                [self.r / 2.0, -self.r / self.W]])
+        
+        # To store externally provided desired velocities and accelerations
+        self.v_d_external = np.zeros((2,1))
+        self.vd_dot_external = np.zeros((2,1))
+
+    def set_desired_velocities(self, v1_d, omega_d, v1_d_dot, omega_d_dot):
+        """
+        Method to provide desired velocities and accelerations if this controller
+        is used with an external kinematic planner.
+        """
+        self.v_d_external[0,0] = v1_d
+        self.v_d_external[1,0] = omega_d
+        self.vd_dot_external[0,0] = v1_d_dot
+        self.vd_dot_external[1,0] = omega_d_dot
+
+    def _compute_regressor_Yc(self, v1_d_dot_est, omega_d_dot_est):
+        """ Computes Yc for p_hat = [m_eff, I_eff]^T. """
+        Yc = np.array([[v1_d_dot_est, 0.0],
+                       [0.0, omega_d_dot_est]])
+        return Yc
+
+    def compute_control(self, robot_state, predefined_path=None): # predefined_path is ignored
+        _, _, _, v1_actual, omega_actual = robot_state # x,y,theta not directly used
+        actual_velocities = np.array([v1_actual, omega_actual]).reshape(2,1)
+
+        # Use externally set desired velocities and accelerations
+        v_d = self.v_d_external
+        vd_dot_est = self.vd_dot_external
+        
+        if np.all(np.abs(v_d) < 1e-9) and predefined_path is not None: 
+            # This is a fallback if used without calling set_desired_velocities but path is given
+            # It's not its primary mode of operation.
+            print("AdaptiveDynamicController Warning: Desired velocities (v_d) are zero or not set. "
+                  "This controller expects v_d via set_desired_velocities(). Outputting zero torques.")
+        
+        eta = actual_velocities - v_d # Velocity tracking error
+        Yc = self._compute_regressor_Yc(vd_dot_est[0,0], vd_dot_est[1,0])
+        
+        p_hat_dot = self.gamma_p @ Yc.T @ eta
+        self.p_hat += p_hat_dot * self.dt
+        self.p_hat = np.clip(self.p_hat, self.min_params, self.max_params)
+
+        u_robust = np.zeros((2,1))
+        if self.use_robust_term and self.dB > 0:
+            epsilon_robust_smoothing = 0.01
+            tanh_argument = eta / epsilon_robust_smoothing
+            tanh_argument = np.clip(tanh_argument, -10, 10)
             sgn_eta_smoothed = np.tanh(tanh_argument)
             u_robust = self.dB * sgn_eta_smoothed
-        else:
-            u_robust = np.zeros_like(eta)
 
-        # 7. Calculate Commanded Generalized Forces (tau_bar_cmd).
-        # The control law for generalized forces F_bar (or tau_bar) is:
-        # tau_bar_cmd = Feedforward (model-based) - Feedback (error correction) - Robust Term
-        # tau_bar_cmd = Yc @ p_hat - Kd @ eta - u_robust
-        feedforward_term = Yc @ self.p_hat  # M_hat * vd_dot_est
-        feedback_term = self.Kd @ eta       # Kd * (v_actual - v_d)
-        
-        tau_bar_cmd = feedforward_term - feedback_term - u_robust # Generalized forces [F_v1_cmd, F_omega_cmd]^T
+        # Control law for dynamic tracking: tau_bar_cmd = Yc @ p_hat - Kd @ eta - u_robust
+        feedforward_term = Yc @ self.p_hat
+        feedback_term = self.Kd @ eta 
+        tau_bar_cmd = feedforward_term - feedback_term - u_robust
+        # No explicit backstepping_term_val here, as this controller assumes it's implicitly
+        # handled by the source of v_d, omega_d (e.g., an outer backstepping loop).
 
-        # Convert generalized forces command to actual wheel torques command [tau_right, tau_left]^T.
         wheel_torques_cmd = self.B2_inv @ tau_bar_cmd
-        tau_right_cmd, tau_left_cmd = wheel_torques_cmd[0], wheel_torques_cmd[1]
+        tau_right_cmd, tau_left_cmd = wheel_torques_cmd[0,0], wheel_torques_cmd[1,0]
 
-        # Optional: Implement torque saturation if motors have physical limits.
-        # max_abs_motor_torque = 10.0 # Example limit in Nm
-        # tau_left_cmd = np.clip(tau_left_cmd, -max_abs_motor_torque, max_abs_motor_torque)
-        # tau_right_cmd = np.clip(tau_right_cmd, -max_abs_motor_torque, max_abs_motor_torque)
-
-        # Store intermediate values for analysis, debugging, or plotting.
         status_dict = {
-            'eta': eta.copy(),                      # Velocity tracking error
-            'p_hat': self.p_hat.copy(),             # Current parameter estimates
-            'kin_errors': kin_errors_tuple,         # Errors from the kinematic controller
-            'v_d': v_d.copy(),                      # Desired velocities from kinematic controller
-            'vd_dot': vd_dot_est.copy(),            # Estimated desired accelerations
-            'tau_bar_cmd': tau_bar_cmd.copy(),      # Commanded generalized forces
-            'u_robust': u_robust.copy()             # Robust term applied
+            'eta': eta.flatten().copy(),
+            'p_hat': self.p_hat.flatten().copy(),
+            'v_d': v_d.flatten().copy(),
+            'vd_dot': vd_dot_est.flatten().copy(),
+            'tau_bar_cmd': tau_bar_cmd.flatten().copy(),
+            'u_robust': u_robust.flatten().copy(),
         }
-
-        return tau_left_cmd, tau_right_cmd, status_dict
+        return np.array([tau_right_cmd, tau_left_cmd]), status_dict
