@@ -1,0 +1,174 @@
+PROCEDURE Run_Adaptive_Control_Simulation
+
+  //=====================================================
+  // Phase 1: Initialization and Setup (mainbackstepping.py)
+  //=====================================================
+  PRINT "Starting setup..."
+
+  // 1.1 Define Simulation Parameters
+  SET dt = 0.02 // Simulation time step (seconds)
+  SET max_steps = 3000 // Maximum simulation duration steps
+  SET selected_path_type = 4 // Example: Choose 'Line' path
+  GET path_name FROM PATH_TYPES dictionary using selected_path_type
+
+  // 1.2 Define Robot Physical Properties
+  SET wheel_radius = 0.005 // meters
+  SET wheel_width = 0.03 // meters
+  SET robot_mass = 1.5 // kg (True value for simulation)
+  SET robot_inertia = 1.2 // kg*m^2 (True value for simulation)
+
+  // 1.3 Define Disturbance Parameters
+  SET disturbance_level = 0.0 // Max continuous random torque disturbance (Nm)
+  // Define Trajectory-Based Kick Disturbance (Optional)
+  SET kick_enabled = TRUE
+  IF kick_enabled:
+    SET kick_target_path_index = floor(number_of_path_points / 2)
+    SET kick_trigger_distance = 0.5 // meters
+    SET kick_duration_time = 0.5 // seconds
+    SET kick_magnitude = [-100.0, -180.0] // Effective disturbance torques [tau_d_v1, tau_d_omega]
+  ELSE:
+    SET kick_target_path_index = NULL
+    SET kick_trigger_distance = 0.0
+    SET kick_duration_time = 0.0
+    SET kick_magnitude = [0.0, 0.0]
+  END IF
+
+  // 1.4 Generate Desired Path
+  PRINT "Generating path:", path_name
+  CALL generate_path(selected_path_type) returning desired_path // Array of (x, y) points
+  IF number_of_points in desired_path < 2:
+    PRINT "Error: Path too short."
+    EXIT PROCEDURE
+  END IF
+
+  // 1.5 Define Initial Robot State
+  Calculate initial_theta based on the first segment of desired_path
+  Calculate initial (x, y) slightly offset from desired_path[0] based on initial_theta
+  SET initial_pose = [initial_x, initial_y, initial_theta + small_offset_angle]
+  SET initial_velocity = [0.0, 0.0] // Start from rest [v1, omega]
+
+  // 1.6 Initialize Kinematic Controller
+  SET kin_k_forward = 1.8, kin_k_theta = 4.5, kin_k_lateral_factor = 1.0
+  SET kin_v_ref = 0.8, kin_omega_max = PI * 1.5, kin_lookahead = 0.4
+  CREATE kinematic_controller = new LyapunovKinematicController(kin_k_forward, kin_k_theta, kin_k_lateral_factor, kin_v_ref, kin_omega_max, kin_lookahead)
+
+  // 1.7 Initialize Adaptive Controller
+  SET initial_p_hat = [robot_mass * 0.8, robot_inertia * 1.2] // Initial parameter estimates [m_hat, I_hat]
+  SET gamma_p = [[0.0, 0.0], [0.0, 0.0]] // Adaptation gains (diagonal matrix) << Critically Important Tuning >>
+  SET kd1_factor = 5.0, kd2_factor = 8.0
+  SET kd = [[initial_p_hat[0] * kd1_factor, 0], [0, initial_p_hat[1] * kd2_factor]] // Velocity error feedback gains
+  SET controller_dB = disturbance_level * 1.2 // Controller's assumed disturbance bound
+  SET use_robust = TRUE // Enable/disable robust term in controller
+  SET min_params = [1.0, 0.1], max_params = [50.0, 10.0] // Bounds for parameter estimates
+  CREATE adaptive_controller = new AdaptiveDynamicController(dt, wheel_radius, wheel_width, kinematic_controller, initial_p_hat, gamma_p, kd, controller_dB, use_robust, min_params, max_params)
+
+  // 1.8 Initialize Simulation Environment
+  PRINT "Initializing simulation..."
+  CREATE simulation = new Simulation(dt, desired_path, wheel_radius, wheel_width, robot_mass, robot_inertia, disturbance_level, initial_pose, initial_velocity, kick_target_path_index, kick_trigger_distance, kick_duration_time, kick_magnitude)
+
+  // 1.9 Initialize Visualizer
+  CREATE visualizer = new Visualizer(desired_path)
+
+  // 1.10 Initialize Data Storage
+  CREATE controller_status_list = [] // List to store dicts {eta, p_hat, kin_errors, v_d}
+
+  //=====================================================
+  // Phase 2: Simulation Loop (mainbackstepping.py)
+  //=====================================================
+  PRINT "Starting simulation loop..."
+  SET controller_finished = FALSE
+  SET start_time_sim = current_system_time
+
+  FOR step FROM 0 TO max_steps - 1:
+
+    // 2.1 Get Current State from Simulation
+    current_state = CALL simulation.get_robot_state() // Returns (x, y, theta, v1, omega)
+
+    // 2.2 Calculate Control Command
+    IF NOT controller_finished:
+      TRY
+        (tau_left_cmd, tau_right_cmd, status) = CALL adaptive_controller.compute_control(current_state, desired_path)
+        APPEND status TO controller_status_list
+
+        // Check if the kinematic controller (inside adaptive) signaled finish
+        IF kinematic_controller.finished_flag IS TRUE:
+          PRINT "Controller signaled finish at step", step
+          SET controller_finished = TRUE
+          SET tau_left_cmd = 0.0
+          SET tau_right_cmd = 0.0
+        END IF
+
+      CATCH Exception as e:
+        PRINT "Error in controller at step", step, ":", e
+        SET tau_left_cmd = 0.0
+        SET tau_right_cmd = 0.0
+      END TRY
+    ELSE:
+      SET tau_left_cmd = 0.0
+      SET tau_right_cmd = 0.0
+    END IF
+
+    // 2.3 Execute Command in Simulation
+    TRY
+      CALL simulation.execute_cmd(tau_left_cmd, tau_right_cmd)
+    CATCH Exception as e:
+      PRINT "Error in simulation step", step, ":", e
+      BREAK loop
+    END TRY
+
+    // 2.4 Optional: Print Progress
+    IF (step + 1) % 200 == 0:
+      PRINT "Step:", step+1, "Time:", simulation.time_stamps[-1], "Pos:", (current_state[0], current_state[1]), "p_hat:", controller_status_list[-1]['p_hat']
+    END IF
+
+    // 2.5 Check for Early Loop Termination
+    IF controller_finished AND step > kinematic_controller.closest_index + 5:
+      PRINT "Simulation loop ending early due to controller finish."
+      BREAK loop
+    END IF
+
+  END FOR
+
+  SET end_time_sim = current_system_time
+  PRINT "Simulation finished. Duration:", end_time_sim - start_time_sim, "seconds"
+
+  //=============================================================
+  // Phase 3: Post-Processing and Visualization (mainbackstepping.py)
+  //=============================================================
+  PRINT "Processing results..."
+
+  // 3.1 Get Simulation Data
+  simulation_data = CALL simulation.get_simulation_data()
+
+  // 3.2 Adjust Data Lengths (if loop broke early)
+  num_sim_data_points = length of simulation_data['time']
+  num_controller_points = length of controller_status_list
+  IF num_controller_points > num_sim_data_points - 1:
+    PRINT "Adjusting controller status list length."
+    TRUNCATE controller_status_list to length num_sim_data_points - 1
+  END IF
+
+  // 3.3 Create Animation
+  PRINT "Creating animation..."
+  SET anim_interval = 50
+  SET anim_step = 3
+  CALL visualizer.create_animation(simulation_data, controller_status_list, anim_interval, anim_step, robot_mass, robot_inertia) returning animation_object
+
+  // 3.4 Optional: Save Animation
+  // TRY saving animation_object to a GIF file
+  // CATCH exceptions during saving
+
+  // 3.5 Plot Static Final Results
+  PRINT "Plotting final results..."
+  CALL visualizer.plot_final_results(simulation_data, controller_status_list, path_name, robot_mass, robot_inertia)
+
+  // 3.6 Display Plots
+  TRY
+    CALL matplotlib.pyplot.show()
+  CATCH Exception as e:
+    PRINT "Note: Could not display plots interactively:", e
+  END TRY
+
+  PRINT "Process completed."
+
+END PROCEDURE

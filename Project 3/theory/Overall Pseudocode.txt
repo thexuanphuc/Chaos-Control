@@ -1,0 +1,37 @@
+// --- Initialization ---
+PROCEDURE Main
+  // Simulation Setup
+  SET simulation time step (dt)
+  SET robot physical parameters (wheel radius, width, mass, inertia)
+  SET disturbance parameters (continuous level, kick properties)
+  CHOOSE path type (e.g., Circle, Line, Complex)
+  GENERATE desired path points (x, y coordinates)
+  DEFINE initial robot pose (x, y, theta) and velocity (v1, omega) near path start
+
+  // Controller Setup
+  SET kinematic controller parameters (gains, reference velocity, lookahead)
+  INITIALIZE KinematicController instance
+  SET adaptive controller parameters (initial parameter estimates, adaptation gains, feedback gains, disturbance bound, robust term usage)
+  INITIALIZE AdaptiveController instance, passing the KinematicController
+
+  // Simulation and Visualization Setup
+  INITIALIZE Simulation instance with robot params, path, initial state, and disturbance settings
+  INITIALIZE Visualizer instance with the desired path
+  INITIALIZE data storage lists (for states, torques, controller status)
+
+  // --- Simulation Loop ---
+  FOR each simulation step:
+    GET current robot state (pose, velocity)
+    CALCULATE desired kinematic velocities using KinematicController
+    CALCULATE control torques using AdaptiveController
+    APPLY torques to Simulation
+    UPDATE robot state (pose, velocity, disturbance)
+    STORE data (state, torques, errors, etc.)
+    IF controller signals finish, BREAK loop
+  END FOR
+
+  // --- Post-Processing ---
+  PROCESS collected data (errors, parameters, torques, disturbances)
+  CREATE animation and plots using Visualizer
+  DISPLAY or SAVE results
+END PROCEDURE

@@ -1,6 +1,8 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import time
+import os
+from matplotlib.animation import PillowWriter
 from Simulation import Simulation
 from Controller2 import LyapunovKinematicController, BacksteppingDynamicController, BacksteppingDynamicController2
 from Visualizer import Visualizer
@@ -87,7 +89,7 @@ def generate_path(path_type_index=2, num_points=150):
     return np.column_stack((x, y))
 
 def main():
-    selected_path_type_idx = 1
+    selected_path_type_idx = 7
     path_name_str = PATH_TYPES.get(selected_path_type_idx, "CustomPath")
     print(f"--- Starting Simulation for: {path_name_str} (Type {selected_path_type_idx}) ---")
     desired_path_coords = generate_path(selected_path_type_idx, num_points=200)
@@ -215,6 +217,14 @@ def main():
         interval=animation_frame_interval_ms, step=simulation_steps_per_frame,
         true_m=actual_robot_mass, true_I=actual_robot_inertia
     )
+    # Save animation as GIF in media folder
+    gif_filename = f"{path_name_str}_path.gif"
+    gif_filepath = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir, "media", gif_filename))
+    try:
+        anim.save(gif_filepath, writer=PillowWriter(fps=1000/animation_frame_interval_ms))
+        print(f"Animation saved to {gif_filepath}")
+    except Exception as e:
+        print(f"Failed to save animation GIF: {e}")
     print("Plotting final static results...")
     visualizer_instance.plot_final_results(
         simulation_results_data, controller_status_history, path_name_str,
