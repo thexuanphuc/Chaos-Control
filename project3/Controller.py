@@ -261,10 +261,17 @@ class BacksteppingDynamicController(Controller):
         self.k_omega = k_omega # Gain for e2 (lateral error, scaled by v_r) in omega_d
         self.k_delta = k_delta # Gain for e3 (orientation error, often with sinc) in omega_d
         
+        # parameter for kinematics controller
+        self.k_xnew = self.k_v        # -> assumed this one is kx
+        self.k_ynew = self.k_omega        # -> assumed this one is ky
+        self.k_thetanew = self.k_delta        # -> assumed this one is k_theta
+
         # Dynamic control parameters
         self.Kd = np.diag(Kd) if isinstance(Kd, (list, tuple)) else Kd # Dynamic feedback gain matrix for velocity error eta
-        self.K_bs = np.diag(K_bs) if isinstance(K_bs, (list, tuple)) else K_bs # Backstepping gain matrix for J_bs term
-
+        # self.K_bs = np.diag(K_bs) if isinstance(K_bs, (list, tuple)) else K_bs # Backstepping gain matrix for J_bs term
+        # for backstepping of V2
+        self.K_bs = np.array([[1, 0], [0, 1/self.k_ynew]])
+        
         # Adaptive control parameters for p_hat = [m_eff, I_eff]^T
         self.p_hat = np.array(initial_p_hat, dtype=float).reshape(-1, 1) if initial_p_hat is not None else np.array([[10.0], [1.0]])
         if self.p_hat.shape != (2,1): raise ValueError("initial_p_hat must be for [m_eff, I_eff]")
@@ -314,7 +321,8 @@ class BacksteppingDynamicController(Controller):
         # Virtual control laws (desired velocities)
         v1_d = v_r * np.cos(e3) + self.k_v * e1
         # Common form for omega_d, using sinc for stability with e3 in Lyapunov function
-        omega_d = omega_r + self.k_omega * v_r * e2 + self.k_delta * v_r * self._safe_sinc(e3) * e3
+        # it should be : omega_d = omega_r + k_theta * e3 + k_y * v_x * sinc(e_theta) * e_y
+        omega_d = omega_r + self.k_thetanew * e3 + self.k_ynew * v_r * self._safe_sinc(e3) * e2
         # Alternative without sinc if Lyapunov function uses e.g. (1-cos(e3)):
         # omega_d = omega_r + self.k_omega * v_r * e2 * self._safe_sinc(e3) + self.k_delta * e3 
 
@@ -415,7 +423,7 @@ class BacksteppingDynamicController(Controller):
         feedforward_term = Yc @ self.p_hat
         feedback_term = self.Kd @ eta 
 
-        tau_bar_cmd = feedforward_term - feedback_term - u_robust - backstepping_term_val
+        tau_bar_cmd = feedforward_term - feedback_term - u_robust + backstepping_term_val
 
         # 8. Convert generalized forces command to actual wheel torques
         wheel_torques_cmd = self.B2_inv @ tau_bar_cmd
