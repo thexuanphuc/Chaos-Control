@@ -156,7 +156,7 @@ $$
 ## 3. Kinematic Controller Design (First Backstepping Step)  
 ### 3.1 Lyapunov Function  
 ## Lyapunov Function for Kinematic Errors
-For developing kinematic controller we are assuming -v = v^d and -\omega = \omega_d 
+For developing the kinematic controller, we are assuming $v = v_d$ and $\omega = \omega_d$.
 Choose Lyapunov function for kinematic errors:
 
 $$
@@ -165,9 +165,8 @@ $$
 
 Taking time derivative and substitute error dynamics:
 
-<p>
   $$\dot{V}_1 := e_x (\omega e_y - v + v_r \cos e_\theta) + e_y (-\omega e_x + v_r \sin e_\theta) + \frac{1}{K_y} e_\theta (\omega_r - \omega)$$
-</p>
+
 ### Control Law Design
 
 Virtual control inputs:
