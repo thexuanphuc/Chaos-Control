@@ -92,9 +92,7 @@ where:
 - `Δp = p̂ - p` is the estimation error.
 
 Let  `vᵈ = [v₁ᵈ, ωᵈ]ᵀ` be the desired velocity vector from a kinematic controller.
-
-
-Define the parameter vector $p = [m, I]^T$, estimate $\hat{p} = [\hat{m}, \hat{I}]^T$, and the regressor matrix:
+The regressor matrix is:
 
 $$
 Y_c = 
@@ -110,36 +108,46 @@ $$
 
 ## 3. Kinematic Controller Design (First Backstepping Step)  
 ### 3.1 Lyapunov Function  
-Choose Lyapunov function for kinematic errors:  
+## Lyapunov Function for Kinematic Errors
+
+Choose Lyapunov function for kinematic errors:
+
 $$
 V_1 = \frac{1}{2} \left( e_x^2 + e_y^2 + \frac{1}{K_y} e_\theta^2 \right)
-$$  
-Time derivative:  
+$$
+
+Time derivative:
+
 $$
 \dot{V}_1 = e_x (\omega e_y - v + v_r \cos e_\theta) + e_y (-\omega e_x + v_r \sin e_\theta) + \frac{1}{K_y} e_\theta (\omega_r - \omega)
 $$
 
-### 3.2 Control Law Design  
-Virtual control inputs:  
+### Control Law Design
+
+Virtual control inputs:
+
 $$
 \begin{aligned}
 v^d &= v_r \cos e_\theta + K_x e_x \\
 \omega^d &= \omega_r + K_\theta e_\theta + v_r e_y K_y \frac{\sin e_\theta}{e_\theta}
 \end{aligned}
-$$  
-Closed-loop error dynamics:  
+$$
+
+Closed-loop error dynamics:
+
 $$
 \begin{aligned}
 \dot{e}_x &= \omega^d e_y - K_x e_x \\
 \dot{e}_y &= -\omega^d e_x + v_r \sin e_\theta \\
 \dot{e}_\theta &= -K_\theta e_\theta - v_r e_y K_y \frac{\sin e_\theta}{e_\theta}
 \end{aligned}
-$$  
-Resulting in:  
+$$
+
+Resulting in:
+
 $$
 \dot{V}_1 = -K_x e_x^2 - \frac{K_\theta}{K_y} e_\theta^2 \leq 0
 $$
-
 ## 4. Dynamic Controller Design (Second Backstepping Step)  
 ### 4.1 Velocity Tracking Error  
 Define velocity error:  
