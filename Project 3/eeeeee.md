@@ -369,8 +369,11 @@ $ \dot{\tau} = \dot{Y}_c \hat{p} + Y_c \dot{\hat{p}} - K_d \dot{\eta} - d_B \fra
   $ -d_B \frac{d}{dt} \tanh\left(\frac{\eta}{\epsilon}\right) = -d_B \cdot \text{diag}\left(1 - \tanh^2\left(\frac{\eta_i}{\epsilon}\right)\right) \cdot \frac{1}{\epsilon} M_2^{-1} (\tau_{\text{real}} + d(t) - Y_c p) $
 
 - **$ \frac{d}{dt} \begin{bmatrix} e_x \\ \frac{1}{K_y} e_\theta \end{bmatrix} $**:
+
   $ \dot{e}_x = \omega e_y - v + v_r \cos e_\theta $
+
   $ \dot{e}_\theta = \omega_r - \omega $
+  
   $ \frac{d}{dt} \begin{bmatrix} e_x \\ \frac{1}{K_y} e_\theta \end{bmatrix} = \begin{bmatrix} \omega e_y - v + v_r \cos e_\theta \\ \frac{1}{K_y} (\omega_r - \omega) \end{bmatrix} $
 
 
