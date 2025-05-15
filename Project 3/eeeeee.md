@@ -26,19 +26,18 @@ Where:
 * `omega` is the angular velocity.
 
 The `Simulation` class uses this model implicitly when converting wheel velocities (commands from the controller) into chassis motion (`v`, `omega`) and updating the state (`x`, `y`, `theta`).
-
   
 Tracking errors in the robot's body frame:  
 $$
-\dot{x_r} = v_r \cos \theta_r
+\dot{x}_r = v_r \cos \theta_r
 $$
 
 $$
-\dot{y_r} = v_r \sin \theta_r
+\dot{y}_r = v_r \sin \theta_r
 $$
 
 $$
-\dot{\theta_r} = \omega_r
+\dot{\theta}_r = \omega_r
 $$
 
 where $v_r(t)$ and $\omega_r(t)$ are the velocity references.
