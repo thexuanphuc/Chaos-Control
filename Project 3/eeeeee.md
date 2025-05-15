@@ -9,15 +9,23 @@ This paper derives a robust adaptive controller for a 3-wheeled nonholonomic mob
 
 ## 2. System Model  
 ### 2.1 Kinematic Model  
-The kinematic model of a unicycle-type mobile robot is given by:  
+The kinematic model of the unicycle-type robot is given by:
+
 $$
 \begin{aligned}
 \dot{x} &= v \cos \theta \\
 \dot{y} &= v \sin \theta \\
-\dot{\theta} &= \omega 
+\dot{\theta} &= \omega
 \end{aligned}
-$$  
-where $(x, y) \in \mathbb{R}^2$ is the robot's position in the world frame, $\theta \in \mathbb{R}$ is the orientation, $v \in \mathbb{R}$ is the linear velocity, and $\omega \in \mathbb{R}$ is the angular velocity.  
+$$
+
+Where:
+* `(x, y)` is the robot's position in the world frame.
+* `\theta` is the robot's orientation (angle with the world X-axis).
+* `v` is the forward linear velocity.
+* `omega` is the angular velocity.
+
+The `Simulation` class uses this model implicitly when converting wheel velocities (commands from the controller) into chassis motion (`v`, `omega`) and updating the state (`x`, `y`, `theta`).
 
 The reference trajectory to be tracked is:  
 $$
@@ -29,20 +37,48 @@ $$
 $$  
 Tracking errors in the robot's body frame:  
 $$
-\begin{aligned}
-e_x &= \cos \theta (x_d - x) + \sin \theta (y_d - y) \\
-e_y &= -\sin \theta (x_d - x) + \cos \theta (y_d - y) \\
-e_\theta &= \theta_d - \theta 
-\end{aligned}
-$$  
-Error dynamics:  
+\dot{x}_r = v_r \cos \theta_r
+$$
+
+$$
+\dot{y}_r = v_r \sin \theta_r
+$$
+
+$$
+\dot{\theta}_r = \omega_r
+$$
+
+where $v_r(t)$ and $\omega_r(t)$ are the velocity references.
+The tracking error is defined relative to the **lookahead point** (`x_d`, `y_d`) and the **reference orientation** (`theta_d`). The errors are expressed in the robot's body frame:
+
+### Error Definition in Local Coordinates
+
+
 $$
 \begin{aligned}
-\dot{e}_x &= \omega e_y - v + v_r \cos e_\theta \\
-\dot{e}_y &= -\omega e_x + v_r \sin e_\theta \\
-\dot{e}_\theta &= \omega_r - \omega 
+e_x &= \cos \theta (x_d - x) + \sin \theta (y_d - y) \quad &\text{(Forward error)} \\
+e_y &= -\sin \theta (x_d - x) + \cos \theta (y_d - y) \quad &\text{(Lateral error)} \\
+e_\theta &= \theta_d - \theta \quad &\text{(Orientation error)}
 \end{aligned}
-$$  
+$$
+
+Where `(x, y, theta)` is the robot's current state. $e_\theta$ is normalized to $[-\pi, \pi]$. These correspond to `error_forward`, `error_lateral`, and `error_theta` calculated in `Controller.py`.
+
+### Error Dynamics in Local Coordinates
+
+The error dynamics between the reference vehicle and the follower robot in local coordinates are given by:
+
+$$
+\dot{e_x} = \omega e_y - v + v_r(t) \cos(e_\theta)
+$$
+
+$$
+\dot{e_y} = -\omega e_x + v_r(t) \sin(e_\theta)
+$$
+
+$$
+\dot{e}_\theta = \omega_r(t) - \omega
+$$
 
 ### 2.2 Dynamic Model  
 The dynamic model governs velocity dynamics:  
