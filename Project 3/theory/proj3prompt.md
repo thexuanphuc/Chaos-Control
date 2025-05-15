@@ -1,10 +1,10 @@
-# Evaluation Prompt: Verification of Backstepping-Based Adaptive Controller for Nonholonomic Mobile Robot
+Prompting of Backstepping-Based Adaptive Controller for Nonholonomic Mobile Robot
 
 
 
 ## Objective
 
-Assess the ability of a large language model to understand and implement the backstepping-based adaptive controller for a nonholonomic mobile robot, as detailed in the document ``Backstepping\_v1.pdf'' dated May 10, 2025. The model should develop a Python simulation to verify the controller's correctness, adhering to the kinematic and dynamic models, adaptive parameter estimation, actuator dynamics, and stability guarantees outlined in the document. The implementation should be suitable for environments like Google Colab, with comprehensive visualization and numerical validation.
+Assess the ability of a large language model to understand and implement the backstepping-based adaptive controller for a nonholonomic mobile robot, as detailed in the document ``Backstepping\_v1.pdf''  The model should develop a Python simulation to verify the controller's correctness, adhering to the kinematic and dynamic models, adaptive parameter estimation, actuator dynamics, and stability guarantees outlined in the document. The implementation should be suitable for environments like Google Colab, with comprehensive visualization and numerical validation.
 
 ## Task Description
 
@@ -149,4 +149,4 @@ The document provides:
 * Do not include external dependencies beyond standard libraries and Matplotlib/NumPy.
 * If assumptions are made (e.g., for gain values or disturbance models), justify them based on the document or standard practices.
 
-## Deliverable Format
+
