@@ -1,96 +1,152 @@
-# Backstepping-Based Adaptive Controller for Nonholonomic Mobile Robots
+# Evaluation Prompt: Verification of Backstepping-Based Adaptive Controller for Nonholonomic Mobile Robot
 
-This document describes the design and derivation of a backstepping-based adaptive controller for a nonholonomic mobile robot with unknown parameters (mass, inertia) and bounded external disturbances. The approach follows a two-stage design process leveraging Lyapunov stability theory.
 
-## System Model
 
-The robot is modeled as a unicycle-type mobile robot.
+## Objective
 
-### Kinematic Model
+Assess the ability of a large language model to understand and implement the backstepping-based adaptive controller for a nonholonomic mobile robot, as detailed in the document ``Backstepping\_v1.pdf'' dated May 10, 2025. The model should develop a Python simulation to verify the controller's correctness, adhering to the kinematic and dynamic models, adaptive parameter estimation, actuator dynamics, and stability guarantees outlined in the document. The implementation should be suitable for environments like Google Colab, with comprehensive visualization and numerical validation.
 
-The robot's pose is $(x, y, \theta)$, linear velocity is $v$, and angular velocity is $\omega$. The kinematic equations are:
+## Task Description
 
-$$
-\dot{x} = v \cos \theta \\
-\dot{y} = v \sin \theta \\
-\dot{\theta} = \omega
-$$
+Using the provided document (``Backstepping\_v1 (3).pdf''), develop a Python simulation that implements the backstepping-based adaptive controller for a unicycle-type nonholonomic mobile robot with unknown mass, inertia, and bounded external disturbances. The simulation should include the kinematic and dynamic controllers, adaptive parameter estimation, and actuator dynamics as derived in the document. Verify the controller's performance through numerical simulation, animated visualization, and static result plots, ensuring stability and tracking error convergence as guaranteed by the Lyapunov-based design.
 
-A reference trajectory is defined by $(x_r, y_r, \theta_r)$ with reference velocities $v_r(t), \omega_r(t)$. Tracking errors in the robot's local frame relative to a desired point $(x_d, y_d, \theta_d)$ are defined as $e_x$ (forward error), $e_y$ (lateral error), and $e_\theta$ (orientation error). The error dynamics are provided.
+## Document Reference
 
-### Dynamic Model
+The document provides:
 
-The velocity dynamics are governed by:
+* **Kinematic Model** (Section 2.1): Equations for robot pose $(x, y, \theta)$ and velocities $(v, \omega)$.
+* **Dynamic Model** (Section 2.3): Velocity dynamics with unknown mass-inertia matrix and disturbances.
+* **Kinematic Controller** (Section 3): Lyapunov-based virtual control inputs for tracking errors.
+* **Dynamic Controller** (Section 4): Adaptive control law with parameter estimation and robust disturbance handling.
+* **Actuator Dynamics** (Section 4.6): First-order dynamics for torque inputs.
+* **Stability Analysis** (Section 6): Lyapunov-based guarantees for bounded errors and convergence under persistent excitation.
 
-$$
-M_2 \dot{v} = \tau + d(t)
-$$
+## Requirements
 
-where $v = [v, \omega]^T$ is the velocity vector, $\tau = [\tau_v, \tau_\omega]^T$ is the control input (generalized force and torque), and $d(t)$ is an unknown bounded disturbance, $||d(t)|| \le d_B$.
+### Simulation Environment
 
-The mass-inertia matrix is $M_2 = \text{diag}(m, I)$, with unknown mass $m$ and inertia $I$. The parameter vector is $p = [m, I]^T$, with estimate $\hat{p} = [\hat{m}, \hat{I}]^T$ and estimation error $\Delta p = \hat{p} - p$.
+* **Robot Model:**
+    * Implement a class (e.g., `Simulation`) modeling a unicycle-type mobile robot.
+    * State vector: Pose $(x, y, \theta)$ and body-frame velocities $(v, \omega)$.
+    * Physical parameters: Mass ($m$), inertia ($I$), wheel radius ($r$), wheelbase width ($W$) (e.g., $m = 5$ kg, $I = 0.1$ kg⋅m², $r = 0.05$ m, $W = 0.2$ m).
+    * Kinematic model: Update pose based on the document’s equations.
+    * Dynamic model: Implement velocity dynamics, including control inputs and bounded disturbances ($||d(t)|| \leq d_B$).
+    * Map wheel torques $[\tau_R, \tau_L]$ to generalized forces/torques $[\tau_v, \tau_\omega]$ using a transformation matrix based on $r$ and $W$.
+* **Integration:** Use Euler integration with a configurable time step ($\Delta t$, e.g., 0.01 s) for both kinematic and dynamic updates.
+* **Angle Normalization:** Ensure $\theta$ remains in $[-\pi, \pi]$.
+* **Disturbance Modeling:**
+    * Implement continuous random disturbances bounded by $d_B$ (e.g., $d_B = 0.5$).
+    * Add an optional ``kick'' disturbance: Apply a fixed disturbance magnitude for a short duration when the robot is near a specified path point.
 
-The regressor matrix $Y_c$ is defined such that $M_2 \dot{v}^d = Y_c p$, with the specific form for this model being:
+### Control System
 
-$$
-Y_c = \begin{bmatrix} \dot{v}^d & 0 \\ 0 & \dot{\omega}^d \end{bmatrix}
-$$
+* **Kinematic Controller (Layer 1):**
+    * Input: Current pose $(x, y, \theta)$, reference trajectory $(x_r, y_r, \theta_r)$.
+    * Output: Desired velocities $(v^d, \omega^d)$.
+    * Functionality:
+        * Compute tracking errors in the robot’s local frame (forward $e_x$, lateral $e_y$, orientation $e_\theta$).
+        * Derive virtual control inputs using the Lyapunov-based law from the document (Section 3.2).
+        * Ensure numerical stability for terms like $\frac{\sin e_\theta}{e_\theta}$.
+        * Apply velocity limits if specified.
+* **Dynamic Controller (Layer 2):**
+    * Input: Current state $(x, y, \theta, v, \omega)$, desired velocities $(v^d, \omega^d)$.
+    * Output: Control torques $[\tau_v, \tau_\omega]$ or wheel torques $[\tau_R, \tau_L]$.
+    * Functionality:
+        * Compute velocity tracking error $\eta = [v - v^d, \omega - \omega^d]^T$.
+        * Estimate unknown parameters $p = [m, I]^T$ using the adaptive law (Section 4.7).
+        * Implement the regressor matrix $Y_c$ for parameter estimation (Section 3).
+        * Apply the control law with a robust term to handle disturbances (Section 4.7).
+        * Incorporate actuator dynamics (Section 4.6) with torque tracking error and control input $a$.
+* **Adaptive Law:**
+    * Update parameter estimates $\hat{p} = [\hat{m}, \hat{I}]^T$ using the specified adaptive law.
+    * Use a positive definite gain matrix $\Gamma_p$ and apply bounds to $\hat{p}$.
+* **Stability:** Ensure the implementation follows the Lyapunov-based stability analysis (Section 6), with $\dot{V} \leq 0$ for bounded errors and convergence under persistent excitation.
 
-where $v^d = [v^d, \omega^d]^T$ is the desired velocity vector.
+### Path Generation
 
-## Control Design (Backstepping Approach)
+* Implement a function (e.g., `generate_path`) to create a reference trajectory $(x_r, y_r, \theta_r)$ with corresponding velocities $(v_r, \omega_r)$. Support at least:
+    * Circle: $x_r = R \cos(t)$, $y_r = R \sin(t)$.
+    * Line: $x_r = t$, $y_r = c$.
+    * Sine wave: $x_r = t$, $y_r = A \sin(\omega t)$.
+* Compute $\theta_r = \text{atan2}(\dot{y}_r, \dot{x}_r)$, $v_r = \sqrt{\dot{x}_r^2 + \dot{y}_r^2}$, and $\omega_r = \dot{\theta}_r$.
+* Represent the path as a NumPy array of points with a configurable resolution.
 
-The controller is designed in two steps using backstepping.
+### Visualization
 
-### Step 1: Kinematic Controller Design
+* **Animated Visualization (e.g., `RobotVisualizer`):**
+    * Use `matplotlib.animation` for real-time animation, exportable as GIF.
+    * **Main Plot:**
+        * Show the reference trajectory (dashed line).
+        * Plot the robot’s actual path (solid line).
+        * Display the robot’s position (circle marker) and orientation (arrow).
+        * Update plot limits dynamically.
+        * Show current simulation time.
+    * **Subplots:**
+        * Tracking errors ($e_x, e_y, e_\theta$) vs. time.
+        * Velocity errors ($\eta_1, \eta_2$) vs. time.
+        * Parameter estimates ($\hat{m}, \hat{I}$) vs. time, with true values.
+        * Control torques ($\tau_v, \tau_\omega$) vs. time.
+        * Disturbances ($d_v, d_\omega$) vs. time.
+    * Configurable animation speed (frame interval) and frame skipping.
+* **Static Visualization (e.g., `plot_results`):**
+    * Generate a multi-panel figure after simulation completion.
+    * Include plots for tracking errors, velocity errors, parameter estimates, torques, and disturbances.
+    * Ensure clear titles, labels, legends, and grids.
 
-This step designs virtual control inputs $v^d$ and $\omega^d$ to stabilize the kinematic tracking errors ($e_x, e_y, e_\theta$). A Lyapunov function $V_1 = \frac{1}{2}(e_x^2 + e_y^2 + \frac{1}{K_y}e_\theta^2)$ is used. The kinematic control laws are chosen as:
+### Simulation Framework
 
-$$
-v^d = v_r \cos e_\theta + K_x e_x \\
-\omega^d = \omega_r + K_\theta e_\theta + v_r e_y K_y \frac{\sin e_\theta}{e_\theta}
-$$
+* Implement a main script (e.g., `main.py`) that:
+    * Configures simulation parameters ($\Delta t$, max steps, path type, initial pose/velocity).
+    * Defines robot parameters and initial parameter estimates $\hat{p}(0)$.
+    * Sets controller gains ($K_x, K_\theta, K_y, K_d, \Gamma_p, K_\tau$) and disturbance bound $d_B$.
+    * Initializes the reference trajectory, simulation, controllers, and visualizer.
+    * Runs the simulation loop:
+        * Update the robot state using the kinematic and dynamic models.
+        * Compute desired velocities using the kinematic controller.
+        * Compute torques using the dynamic controller and adaptive law.
+        * Apply actuator dynamics to generate the final control input.
+        * Store data (pose, errors, velocities, estimates, torques, disturbances).
+        * Check for path completion or termination conditions.
+    * Generates and saves animated and static visualizations.
+    * Reports simulation progress and timing.
 
-where $K_x, K_\theta, K_y > 0$ are controller gains.
+### Technical Requirements
 
-### Step 2: Dynamic Controller Design
+* **Libraries:** Use NumPy for numerical operations and Matplotlib for visualization.
+* **Code Quality:**
+    * Write clear, documented code with function/class descriptions.
+    * Use type hints where appropriate.
+    * Handle numerical issues (e.g., division by zero, overflow in $\tanh$).
+* **Performance:**
+    * Optimize for efficient NumPy usage.
+    * Allow configuration of animation parameters for performance tuning.
+* **Error Handling:**
+    * Validate path generation and simulation inputs.
+    * Handle file saving for visualization outputs.
 
-This step designs the actual torque input $\tau$ to ensure that the actual velocities $v, \omega$ track the desired velocities $v^d, \omega^d$ from the kinematic layer, while estimating the unknown parameters $m, I$. The velocity tracking error is $\eta = v - v^d$.
+## Expected Outputs
 
-A composite Lyapunov function is used:
+* A Python script executable in Google Colab.
+* An animated visualization (HTML5/JS or GIF) showing the robot tracking the reference trajectory, with subplots for errors, estimates, torques, and disturbances.
+* Static plots summarizing final performance metrics (errors, estimates, torques, disturbances).
+* Console output reporting simulation progress, completion time, and key metrics (e.g., final tracking errors).
 
-$$
-V = V_1 + \frac{1}{2}\eta^T M_2 \eta + \frac{1}{2}\Delta p^T \Gamma_p^{-1} \Delta p
-$$
+## Evaluation Criteria
 
-where $\Gamma_p$ is a positive definite adaptation gain matrix.
+* **Correctness:** The implementation accurately reflects the kinematic and dynamic models, controller laws, adaptive updates, and actuator dynamics from the document.
+* **Completeness:** All required components (simulation, controllers, visualization) are implemented.
+* **Stability:** The simulation demonstrates bounded errors and convergence under persistent excitation, as guaranteed by the Lyapunov analysis.
+* **Clarity:** Code is well-documented, and visualizations are clear and informative.
+* **Robustness:** The simulation handles numerical issues and edge cases appropriately.
 
-The adaptive law for parameter estimation is derived as:
+## Prompt Instructions for the LLM
 
-$$
-\dot{\hat{p}} = -\Gamma_p Y_c^T \eta
-$$
+* Extract the relevant equations and algorithms from the provided document (``Backstepping\_v1 (3).pdf'').
+* Implement the simulation as a standalone Python script, including all required classes and functions.
+* Provide the complete code wrapped in a markdown code block (\`\`\`python ... \`\`\`).
+* Include a brief explanation of how the implementation follows the document’s derivation, highlighting key equations and design choices.
+* Ensure the code is runnable in Google Colab with minimal setup (e.g., only requiring NumPy and Matplotlib).
+* Do not include external dependencies beyond standard libraries and Matplotlib/NumPy.
+* If assumptions are made (e.g., for gain values or disturbance models), justify them based on the document or standard practices.
 
-The control law for the desired generalized force/torque $\tau_d$ is derived based on the Lyapunov analysis and includes a robust term:
-
-$$
-\tau_d = Y_c \hat{p} - K_d \eta - d_B \tanh \left( \frac{\eta}{\epsilon} \right) + \begin{bmatrix} e_x \\ \frac{1}{K_y} e_\theta \end{bmatrix}
-$$
-
-where $K_d$ is a positive definite gain matrix for velocity error feedback, $d_B$ is the assumed disturbance bound, and $\epsilon > 0$ is a small constant.
-
-The document also considers actuator dynamics $\dot{\tau} = \frac{1}{\gamma}(-\tau + a)$ and derives a final control input $a = \tau_d + \gamma \dot{\tau}_d - \gamma K_\tau (\tau - \tau_d)$, where $\overline{e}_\tau = \tau - \tau_d$ is the torque tracking error and $K_\tau > 0$.
-
-## Adaptive Law and Control Summary
-
-The key components of the complete controller include:
-
--   Kinematic laws for $v^d, \omega^d$.
--   Velocity tracking error $\eta$.
--   Adaptive law $\dot{\hat{p}} = -\Gamma_p Y_c^T \eta$.
--   Torque reference (desired generalized force/torque) $\tau_d$.
--   Final control input $a$ (if actuator dynamics are considered).
-
-## Stability Guarantee
-
-Lyapunov stability theory is used throughout the derivation to guarantee the boundedness of all tracking errors ($e_x, e_y, e_\theta, \eta$) and parameter estimation errors ($\Delta p$). Under persistent excitation, Barbalat's Lemma is invoked to ensure that all errors converge to zero.
+## Deliverable Format
