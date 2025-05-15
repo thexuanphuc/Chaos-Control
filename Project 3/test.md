@@ -163,11 +163,11 @@ $$
 ### Step 1: Define the Lyapunov Function and Its Components
 The extended Lyapunov function with actuator dynamics is given by:
 
-$ V_3 = V_2+ \frac{1}{2} \bar{{e_\tau}^T} \bar{e_\tau} $
+$ V_3 = V_2+ \frac{1}{2} \bar{e}_\tau^T \bar{e}_\tau $
 
 where:
 - $ V_2= V_1 + \frac{1}{2} \eta^T M_2 \eta + \frac{1}{2} \Delta p^T \Gamma_p^{-1} \Delta p $ is the composite Lyapunov function from the dynamic controller design,
-- $ \bar{e_\tau} = \tau - \tau_{\text{real}} $ is the error between the desired control input $ \tau $ and the actual control input $ \tau_{\text{real}} $,
+- $ \bar{e}_\tau = \tau - \tau_{\text{real}} $ is the error between the desired control input $ \tau $ and the actual control input $ \tau_{\text{real}} $,
 - $ V_1 = \frac{1}{2} \left( e_x^2 + e_y^2 + \frac{1}{K_y} e_\theta^2 \right) $ is the kinematic Lyapunov function,
 - $ \eta = v - v^d $ is the velocity tracking error,
 - $ \Delta p = p - \hat{p} $ is the parameter estimation error,
@@ -176,26 +176,26 @@ where:
 
 The actuator dynamics are:
 
-$ \dot{\tau_{\text{real}}} = \frac{1}{\gamma} (-\tau_{\text{real}} + a) $
+$ \dot{\tau}_{\text{real}} = \frac{1}{\gamma} (-\tau_{\text{real}} + a) $
 
 where $ a $ is the control input we can design, and $ \gamma > 0 $ is a time constant.
 
 ### Step 2: Compute the Time Derivative $ \dot{V_3} $
 The time derivative of $ V_3 $ is:
 
-$ \dot{V_3} = \dot{V_2}+ \bar{e_\tau}^T \dot{\bar{e_\tau}} $
+$ \dot{V_3} = \dot{V_2}+ \bar{e}_\tau^T \dot{\bar{e}}_\tau $
 
-Since $ \bar{e_\tau} = \tau - \tau_{\text{real}} $, its derivative is:
+Since $ \bar{e}_\tau = \tau - \tau_{\text{real}} $, its derivative is:
 
-$ \dot{\bar{e_\tau}} = \dot{\tau} - \dot{\tau_{\text{real}}} $
+$ \dot{\bar{e}}_\tau = \dot{\tau} - \dot{\tau}_{\text{real}} $
 
 Substitute the actuator dynamics:
 
-$ \dot{\bar{e_\tau}} = \dot{\tau} - \frac{1}{\gamma} (-\tau_{\text{real}} + a) $
+$ \dot{\bar{e}}_\tau = \dot{\tau} - \frac{1}{\gamma} (-\tau_{\text{real}} + a) $
 
 Thus:
 
-$ \dot{V_3} = \dot{V_2}+ \bar{e_\tau}^T \left( \dot{\tau} - \frac{1}{\gamma} (-\tau_{\text{real}} + a) \right) $
+$ \dot{V_3} = \dot{V_2}+ \bar{e}_\tau^T \left( \dot{\tau} - \frac{1}{\gamma} (-\tau_{\text{real}} + a) \right) $
 
 We need to compute $ \dot{V_2}$ with $ \tau_{\text{real}} $ as the actual input (since the dynamic model is now $ M_2 \dot{v} = \tau_{\text{real}} + d(t) $), and express $ \dot{\tau} $ explicitly.
 
@@ -276,9 +276,9 @@ Thus:
 
 $ \dot{V_2}= -K_x e_x^2 - \frac{K_\theta}{K_y} e_\theta^2 + \eta^T \left( \tau_{\text{real}} + d(t) - Y_c \hat{p} - \begin{bmatrix} e_x \\ \frac{1}{K_y} e_\theta \end{bmatrix} \right) $
 
-Substitute $ \tau_{\text{real}} = \tau - \bar{e_\tau} $:
+Substitute $ \tau_{\text{real}} = \tau - \bar{e}_\tau $:
 
-$ \dot{V_2}= -K_x e_x^2 - \frac{K_\theta}{K_y} e_\theta^2 + \eta^T \left( \tau - \bar{e_\tau} + d(t) - Y_c \hat{p} - \begin{bmatrix} e_x \\ \frac{1}{K_y} e_\theta \end{bmatrix} \right) $
+$ \dot{V_2}= -K_x e_x^2 - \frac{K_\theta}{K_y} e_\theta^2 + \eta^T \left( \tau - \bar{e}_\tau + d(t) - Y_c \hat{p} - \begin{bmatrix} e_x \\ \frac{1}{K_y} e_\theta \end{bmatrix} \right) $
 
 Use the desired control:
 
@@ -286,18 +286,18 @@ $ \tau = Y_c \hat{p} - K_d \eta - d_B \tanh\left(\frac{\eta}{\epsilon}\right) + 
 
 $ \tau - Y_c \hat{p} - \begin{bmatrix} e_x \\ \frac{1}{K_y} e_\theta \end{bmatrix} = -K_d \eta - d_B \tanh\left(\frac{\eta}{\epsilon}\right) $
 
-$ \dot{V_2}= -K_x e_x^2 - \frac{K_\theta}{K_y} e_\theta^2 + \eta^T \left( -K_d \eta - d_B \tanh\left(\frac{\eta}{\epsilon}\right) + d(t) - \bar{e_\tau} \right) $
+$ \dot{V_2}= -K_x e_x^2 - \frac{K_\theta}{K_y} e_\theta^2 + \eta^T \left( -K_d \eta - d_B \tanh\left(\frac{\eta}{\epsilon}\right) + d(t) - \bar{e}_\tau \right) $
 
-$ \dot{V_2}= -K_x e_x^2 - \frac{K_\theta}{K_y} e_\theta^2 - \eta^T K_d \eta + \eta^T d(t) - \eta^T d_B \tanh\left(\frac{\eta}{\epsilon}\right) - \eta^T \bar{e_\tau} $
+$ \dot{V_2}= -K_x e_x^2 - \frac{K_\theta}{K_y} e_\theta^2 - \eta^T K_d \eta + \eta^T d(t) - \eta^T d_B \tanh\left(\frac{\eta}{\epsilon}\right) - \eta^T \bar{e}_\tau $
 
 ---
 
 ### Step 4: Compute $ \dot{V_3} $ Explicitly
 Substitute into $ \dot{V_3} $:
 
-$ \dot{V_3} = \dot{V_2}+ \bar{e_\tau}^T \left( \dot{\tau} - \frac{1}{\gamma} (-\tau_{\text{real}} + a) \right) $
+$ \dot{V_3} = \dot{V_2}+ \bar{e}_\tau^T \left( \dot{\tau} - \frac{1}{\gamma} (-\tau_{\text{real}} + a) \right) $
 
-$ \dot{V_3} = -K_x e_x^2 - \frac{K_\theta}{K_y} e_\theta^2 - \eta^T K_d \eta + \eta^T d(t) - \eta^T d_B \tanh\left(\frac{\eta}{\epsilon}\right) - \eta^T \bar{e_\tau} + \bar{e_\tau}^T \left( \dot{\tau} - \frac{1}{\gamma} (-\tau_{\text{real}} + a) \right) $
+$ \dot{V_3} = -K_x e_x^2 - \frac{K_\theta}{K_y} e_\theta^2 - \eta^T K_d \eta + \eta^T d(t) - \eta^T d_B \tanh\left(\frac{\eta}{\epsilon}\right) - \eta^T \bar{e}_\tau + \bar{e}_\tau^T \left( \dot{\tau} - \frac{1}{\gamma} (-\tau_{\text{real}} + a) \right) $
 
 #### 4.1: Compute $ \dot{\tau} $
 $ \tau = Y_c \hat{p} - K_d \eta - d_B \tanh\left(\frac{\eta}{\epsilon}\right) + \begin{bmatrix} e_x \\ \frac{1}{K_y} e_\theta \end{bmatrix} $
@@ -333,32 +333,32 @@ Combining these, $ \dot{\tau} $ is a complex expression involving states, their 
 ### Step 5: Design $ a $ to Make $ \dot{V_3} < 0 $
 We need $ \dot{V_3} $ to be negative definite. Current form:
 
-$ \dot{V_3} = -K_x e_x^2 - \frac{K_\theta}{K_y} e_\theta^2 - \eta^T K_d \eta + \eta^T d(t) - \eta^T d_B \tanh\left(\frac{\eta}{\epsilon}\right) - \eta^T \bar{e_\tau} + \bar{e_\tau}^T \left( \dot{\tau} - \frac{1}{\gamma} (-\tau_{\text{real}} + a) \right) $
+$ \dot{V_3} = -K_x e_x^2 - \frac{K_\theta}{K_y} e_\theta^2 - \eta^T K_d \eta + \eta^T d(t) - \eta^T d_B \tanh\left(\frac{\eta}{\epsilon}\right) - \eta^T \bar{e}_\tau + \bar{e}_\tau^T \left( \dot{\tau} - \frac{1}{\gamma} (-\tau_{\text{real}} + a) \right) $
 
 #### 5.1: Handle Indefinite Terms
 - **$ \eta^T d(t) - \eta^T d_B \tanh\left(\frac{\eta}{\epsilon}\right) $**:
   Since $ |d(t)| ≤ d_B $, this term is bounded, and the $ \tanh $ function helps mitigate it, often resulting in a small positive residual, but dominated by negative terms when gains are large.
 
-- **$ - \eta^T \bar{e_\tau} + \bar{e_\tau}^T \left( \dot{\tau} - \dot{\tau_{\text{real}}} \right) $**:
+- **$ - \eta^T \bar{e}_\tau + \bar{e}_\tau^T \left( \dot{\tau} - \dot{\tau}_{\text{real}} \right) $**:
   Choose $ a $ to make this negative. Set:
 
-  $ \dot{\tau_{\text{real}}} = \dot{\tau} + K_\tau \bar{e_\tau} + \eta $
+  $ \dot{\tau}_{\text{real}} = \dot{\tau} + K_\tau \bar{e}_\tau + \eta $
 
-  $ \frac{1}{\gamma} (-\tau_{\text{real}} + a) = \dot{\tau} + K_\tau \bar{e_\tau} + \eta $
+  $ \frac{1}{\gamma} (-\tau_{\text{real}} + a) = \dot{\tau} + K_\tau \bar{e}_\tau + \eta $
 
-  $ a = \tau_{\text{real}} + \gamma ( \dot{\tau} + K_\tau \bar{e_\tau} + \eta ) $
+  $ a = \tau_{\text{real}} + \gamma ( \dot{\tau} + K_\tau \bar{e}_\tau + \eta ) $
 
   Then:
 
-  $ \bar{e_\tau}^T (\dot{\tau} - \dot{\tau_{\text{real}}}) = \bar{e_\tau}^T (\dot{\tau} - (\dot{\tau} + K_\tau \bar{e_\tau} + \eta)) = -\bar{e_\tau}^T K_\tau \bar{e_\tau} - \bar{e_\tau}^T \eta $
+  $ \bar{e}_\tau^T (\dot{\tau} - \dot{\tau}_{\text{real}}) = \bar{e}_\tau^T (\dot{\tau} - (\dot{\tau} + K_\tau \bar{e}_\tau + \eta)) = -\bar{e}_\tau^T K_\tau \bar{e}_\tau - \bar{e}_\tau^T \eta $
 
-  $ - \eta^T \bar{e_\tau} + \bar{e_\tau}^T (\dot{\tau} - \dot{\tau_{\text{real}}}) = -\bar{e_\tau}^T \eta - \bar{e_\tau}^T K_\tau \bar{e_\tau} - \bar{e_\tau}^T \eta = -K_\tau \bar{e_\tau}^T \bar{e_\tau} - 2 \bar{e_\tau}^T \eta $
+  $ - \eta^T \bar{e}_\tau + \bar{e}_\tau^T (\dot{\tau} - \dot{\tau}_{\text{real}}) = -\bar{e}_\tau^T \eta - \bar{e}_\tau^T K_\tau \bar{e}_\tau - \bar{e}_\tau^T \eta = -K_\tau \bar{e}_\tau^T \bar{e}_\tau - 2 \bar{e}_\tau^T \eta $
 
-  Use Young’s inequality: $ -2 \bar{e_\tau}^T \eta ≤ ||\bar{e_\tau}||^2 + ||\eta||^2 $:
+  Use Young’s inequality: $ -2 \bar{e}_\tau^T \eta ≤ ||\bar{e}_\tau||^2 + ||\eta||^2 $:
 
-  $ \dot{V_3} ≤ -K_x e_x^2 - \frac{K_\theta}{K_y} e_\theta^2 - \eta^T K_d \eta + \eta^T d(t) - \eta^T d_B \tanh\left(\frac{\eta}{\epsilon}\right) - K_\tau \bar{e_\tau}^T \bar{e_\tau} + ||\eta||^2 + ||\bar{e_\tau}||^2 $
+  $ \dot{V_3} ≤ -K_x e_x^2 - \frac{K_\theta}{K_y} e_\theta^2 - \eta^T K_d \eta + \eta^T d(t) - \eta^T d_B \tanh\left(\frac{\eta}{\epsilon}\right) - K_\tau \bar{e}_\tau^T \bar{e}_\tau + ||\eta||^2 + ||\bar{e}_\tau||^2 $
 
-  $ = -K_x e_x^2 - \frac{K_\theta}{K_y} e_\theta^2 - (\lambda_{\text{min}}(K_d) - 1) ||\eta||^2 - (K_\tau - 1) ||\bar{e_\tau}||^2 + \eta^T d(t) - \eta^T d_B \tanh\left(\frac{\eta}{\epsilon}\right) $
+  $ = -K_x e_x^2 - \frac{K_\theta}{K_y} e_\theta^2 - (\lambda_{\text{min}}(K_d) - 1) ||\eta||^2 - (K_\tau - 1) ||\bar{e}_\tau||^2 + \eta^T d(t) - \eta^T d_B \tanh\left(\frac{\eta}{\epsilon}\right) $
 
 Choose $ K_d $ and $ K_\tau $ such that $ \lambda_{\text{min}}(K_d) > 1 $ and $ K_\tau > 1 $, ensuring all quadratic terms are negative definite, and the disturbance term is bounded, making $ \dot{V_3} < 0 $ outside a small region.
 
@@ -367,7 +367,7 @@ Choose $ K_d $ and $ K_\tau $ such that $ \lambda_{\text{min}}(K_d) > 1 $ and $ 
 ### Final Expressions
 **$ \dot{V_3} $**:
 
-$ \dot{V_3} = -K_x e_x^2 - \frac{K_\theta}{K_y} e_\theta^2 - \eta^T K_d \eta + \eta^T d(t) - \eta^T d_B \tanh\left(\frac{\eta}{\epsilon}\right) - \eta^T \bar{e_\tau} + \bar{e_\tau}^T \left( \dot{\tau} - \frac{1}{\gamma} (-\tau_{\text{real}} + a) \right) $
+$ \dot{V_3} = -K_x e_x^2 - \frac{K_\theta}{K_y} e_\theta^2 - \eta^T K_d \eta + \eta^T d(t) - \eta^T d_B \tanh\left(\frac{\eta}{\epsilon}\right) - \eta^T \bar{e}_\tau + \bar{e}_\tau^T \left( \dot{\tau} - \frac{1}{\gamma} (-\tau_{\text{real}} + a) \right) $
 
 **Control Input $ a $**:
 
