@@ -163,7 +163,7 @@ $$
 ### Step 1: Define the Lyapunov Function and Its Components
 The extended Lyapunov function with actuator dynamics is given by:
 
-$ V_3 = V_2+ \frac{1}{2} \bar{e_\tau}^T \bar{e_\tau} $
+$ V_3 = V_2+ \frac{1}{2} \bar{{e_\tau}^T} \bar{e_\tau} $
 
 where:
 - $ V_2= V_1 + \frac{1}{2} \eta^T M_2 \eta + \frac{1}{2} \Delta p^T \Gamma_p^{-1} \Delta p $ is the composite Lyapunov function from the dynamic controller design,
