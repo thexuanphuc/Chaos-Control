@@ -47,7 +47,7 @@ We consider a nonholonomic mobile robot described by:
 
 - State variables:  
   s ∈ ℝⁿ  
-- Control action (torques/forces):  
+- Control action:  
   a ∈ ℝᵐ  
 - Unknown physical parameters:  
   θ ∈ ℝᵖ  
