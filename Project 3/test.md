@@ -56,19 +56,19 @@ $$
 The dynamic model governs velocity dynamics:  
 
 $$
-M_2 \dot{v} &= \tau + d(t)
+M_2 \dot{v} = \tau + d(t)
 $$  
 
 where:  
-- $v &= [v, \omega]^T$: Velocity vector  
-- $\tau &= [\tau_v, \tau_\omega]^T$: Control input  
+- $v = [v, \omega]^T$: Velocity vector  
+- $\tau = [\tau_v, \tau_\omega]^T$: Control input  
 - $d(t)$: Bounded disturbance ($|d(t)| ≤ d_B$)  
-- $M_2 &= \text{diag}(m, I)$: Unknown mass-inertia matrix  
+- $M_2 = \text{diag}(m, I)$: Unknown mass-inertia matrix  
 
-Define parameter vector $p &= [m, I]^T$, estimate $\hat{p} &= [\hat{m}, \hat{I}]^T$, and regressor matrix:  
+Define parameter vector $p = [m, I]^T$, estimate $\hat{p} = [\hat{m}, \hat{I}]^T$, and regressor matrix:  
 
 $$
-Y_c &= \begin{bmatrix} \dot{v}^d & 0 \\ 0 & \dot{\omega}^d \end{bmatrix}, \quad M_2 \dot{v}^d &= Y_c p
+Y_c = \begin{bmatrix} \dot{v}^d & 0 \\ 0 & \dot{\omega}^d \end{bmatrix}, \quad M_2 \dot{v}^d = Y_c p
 $$
 
 ## 3. Kinematic Controller Design (First Backstepping Step)  
@@ -76,13 +76,13 @@ $$
 Choose Lyapunov function for kinematic errors:  
 
 $$
-V_1 &= \frac{1}{2} \left( e_x^2 + e_y^2 + \frac{1}{K_y} e_\theta^2 \right)
+V_1 = \frac{1}{2} \left( e_x^2 + e_y^2 + \frac{1}{K_y} e_\theta^2 \right)
 $$  
 
 Time derivative:  
 
 $$
-\dot{V_1} &= e_x (\omega e_y - v + v_r \cos e_\theta) + e_y (-\omega e_x + v_r \sin e_\theta) + \frac{1}{K_y} e_\theta (\omega_r - \omega)
+\dot{V_1} = e_x (\omega e_y - v + v_r \cos e_\theta) + e_y (-\omega e_x + v_r \sin e_\theta) + \frac{1}{K_y} e_\theta (\omega_r - \omega)
 $$
 
 ### 3.2 Control Law Design  
@@ -108,7 +108,7 @@ $$
 Resulting in:  
 
 $$
-\dot{V_1} &= -K_x e_x^2 - \frac{K_\theta}{K_y} e_\theta^2 ≤ 0
+\dot{V_1} = -K_x e_x^2 - \frac{K_\theta}{K_y} e_\theta^2 ≤ 0
 $$
 
 ## 4. Dynamic Controller Design (Second Backstepping Step)  
@@ -116,27 +116,27 @@ $$
 Define velocity error:  
 
 $$
-\eta &= v - v^d &= \begin{bmatrix} \eta_1 \\ \eta_2 \end{bmatrix}
+\eta = v - v^d = \begin{bmatrix} \eta_1 \\ \eta_2 \end{bmatrix}
 $$  
 
 Dynamic model becomes:  
 
 $$
-M_2 \dot{\eta} &= \tau + d(t) - Y_c \hat{p} + Y_c \Delta p
+M_2 \dot{\eta} = \tau + d(t) - Y_c \hat{p} + Y_c \Delta p
 $$
 
 ### 4.2 Composite Lyapunov Function  
 Composite Lyapunov function:  
 
 $$
-V_2&= V_1 + \frac{1}{2} \eta^T M_2 \eta + \frac{1}{2} \Delta p^T \Gamma_p^{-1} \Delta p
+V_2= V_1 + \frac{1}{2} \eta^T M_2 \eta + \frac{1}{2} \Delta p^T \Gamma_p^{-1} \Delta p
 $$
 
 ### 4.3 Recompute $\dot{V_1}$ with Velocity Errors  
 Updated error dynamics:  
 
 $$
-\dot{V_1} &= -K_x e_x^2 - \frac{K_\theta}{K_y} e_\theta^2 - e_x \eta_1 - \frac{1}{K_y} e_\theta \eta_2
+\dot{V_1} = -K_x e_x^2 - \frac{K_\theta}{K_y} e_\theta^2 - e_x \eta_1 - \frac{1}{K_y} e_\theta \eta_2
 $$
 
 ### 4.4 Compute $\dot{V}$  
@@ -163,168 +163,168 @@ $$
 ### Step 1: Define the Lyapunov Function and Its Components
 The extended Lyapunov function with actuator dynamics is given by:
 
-$ V_3 &= V_2+ \frac{1}{2} \bar{e}_\tau^T \bar{e}_\tau $
+$ V_3 = V_2+ \frac{1}{2} \bar{e_\tau}^T \bar{e_\tau} $
 
 where:
-- $ V_2&= V_1 + \frac{1}{2} \eta^T M_2 \eta + \frac{1}{2} \Delta p^T \Gamma_p^{-1} \Delta p $ is the composite Lyapunov function from the dynamic controller design,
-- $ \bar{e}_\tau &= \tau - \tau_{\text{real}} $ is the error between the desired control input $ \tau $ and the actual control input $ \tau_{\text{real}} $,
-- $ V_1 &= \frac{1}{2} \left( e_x^2 + e_y^2 + \frac{1}{K_y} e_\theta^2 \right) $ is the kinematic Lyapunov function,
-- $ \eta &= v - v^d $ is the velocity tracking error,
-- $ \Delta p &= p - \hat{p} $ is the parameter estimation error,
-- $ M_2 &= \text{diag}(m, I) $ is the unknown mass-inertia matrix,
+- $ V_2= V_1 + \frac{1}{2} \eta^T M_2 \eta + \frac{1}{2} \Delta p^T \Gamma_p^{-1} \Delta p $ is the composite Lyapunov function from the dynamic controller design,
+- $ \bar{e_\tau} = \tau - \tau_{\text{real}} $ is the error between the desired control input $ \tau $ and the actual control input $ \tau_{\text{real}} $,
+- $ V_1 = \frac{1}{2} \left( e_x^2 + e_y^2 + \frac{1}{K_y} e_\theta^2 \right) $ is the kinematic Lyapunov function,
+- $ \eta = v - v^d $ is the velocity tracking error,
+- $ \Delta p = p - \hat{p} $ is the parameter estimation error,
+- $ M_2 = \text{diag}(m, I) $ is the unknown mass-inertia matrix,
 - $ \Gamma_p $ is a positive definite adaptation gain matrix.
 
 The actuator dynamics are:
 
-$ \dot{\tau}_{\text{real}} &= \frac{1}{\gamma} (-\tau_{\text{real}} + a) $
+$ \dot{\tau_{\text{real}}} = \frac{1}{\gamma} (-\tau_{\text{real}} + a) $
 
 where $ a $ is the control input we can design, and $ \gamma > 0 $ is a time constant.
 
 ### Step 2: Compute the Time Derivative $ \dot{V_3} $
 The time derivative of $ V_3 $ is:
 
-$ \dot{V_3} &= \dot{V_2}+ \bar{e}_\tau^T \dot{\bar{e}}_\tau $
+$ \dot{V_3} = \dot{V_2}+ \bar{e_\tau}^T \dot{\bar{e_\tau}} $
 
-Since $ \bar{e}_\tau &= \tau - \tau_{\text{real}} $, its derivative is:
+Since $ \bar{e_\tau} = \tau - \tau_{\text{real}} $, its derivative is:
 
-$ \dot{\bar{e}}_\tau &= \dot{\tau} - \dot{\tau}_{\text{real}} $
+$ \dot{\bar{e_\tau}} = \dot{\tau} - \dot{\tau_{\text{real}}} $
 
 Substitute the actuator dynamics:
 
-$ \dot{\bar{e}}_\tau &= \dot{\tau} - \frac{1}{\gamma} (-\tau_{\text{real}} + a) $
+$ \dot{\bar{e_\tau}} = \dot{\tau} - \frac{1}{\gamma} (-\tau_{\text{real}} + a) $
 
 Thus:
 
-$ \dot{V_3} &= \dot{V_2}+ \bar{e}_\tau^T \left( \dot{\tau} - \frac{1}{\gamma} (-\tau_{\text{real}} + a) \right) $
+$ \dot{V_3} = \dot{V_2}+ \bar{e_\tau}^T \left( \dot{\tau} - \frac{1}{\gamma} (-\tau_{\text{real}} + a) \right) $
 
-We need to compute $ \dot{V_2}$ with $ \tau_{\text{real}} $ as the actual input (since the dynamic model is now $ M_2 \dot{v} &= \tau_{\text{real}} + d(t) $), and express $ \dot{\tau} $ explicitly.
+We need to compute $ \dot{V_2}$ with $ \tau_{\text{real}} $ as the actual input (since the dynamic model is now $ M_2 \dot{v} = \tau_{\text{real}} + d(t) $), and express $ \dot{\tau} $ explicitly.
 
 ---
 
 ### Step 3: Compute $ \dot{V_2}$ with Actuator Dynamics
 The composite Lyapunov function is:
 
-$ V_2&= V_1 + \frac{1}{2} \eta^T M_2 \eta + \frac{1}{2} \Delta p^T \Gamma_p^{-1} \Delta p $
+$ V_2= V_1 + \frac{1}{2} \eta^T M_2 \eta + \frac{1}{2} \Delta p^T \Gamma_p^{-1} \Delta p $
 
 Its derivative is:
 
-$ \dot{V_2}&= \dot{V_1} + \eta^T M_2 \dot{\eta} + \Delta p^T \Gamma_p^{-1} \dot{\Delta p} $
+$ \dot{V_2}= \dot{V_1} + \eta^T M_2 \dot{\eta} + \Delta p^T \Gamma_p^{-1} \dot{\Delta p} $
 
 #### 3.1: Compute $ \dot{V_1} $
 From the kinematic controller design:
 
-$ \dot{V_1} &= -K_x e_x^2 - \frac{K_\theta}{K_y} e_\theta^2 - e_x \eta_1 - \frac{1}{K_y} e_\theta \eta_2 $
+$ \dot{V_1} = -K_x e_x^2 - \frac{K_\theta}{K_y} e_\theta^2 - e_x \eta_1 - \frac{1}{K_y} e_\theta \eta_2 $
 
-This accounts for the velocity error $ \eta &= v - v^d $, where $ v &= [v, \omega]^T $ is the actual velocity, and $ v^d &= [v^d, \omega^d]^T $ is the desired velocity.
+This accounts for the velocity error $ \eta = v - v^d $, where $ v = [v, \omega]^T $ is the actual velocity, and $ v^d = [v^d, \omega^d]^T $ is the desired velocity.
 
 #### 3.2: Compute $ M_2 \dot{\eta} $
-The velocity error is $ \eta &= v - v^d $, so:
+The velocity error is $ \eta = v - v^d $, so:
 
-$ \dot{\eta} &= \dot{v} - \dot{v}^d $
+$ \dot{\eta} = \dot{v} - \dot{v}^d $
 
 The dynamic model is:
 
-$ M_2 \dot{v} &= \tau_{\text{real}} + d(t) $
+$ M_2 \dot{v} = \tau_{\text{real}} + d(t) $
 
-$ \dot{v} &= M_2^{-1} (\tau_{\text{real}} + d(t)) $
+$ \dot{v} = M_2^{-1} (\tau_{\text{real}} + d(t)) $
 
-Also, $ M_2 \dot{v}^d &= Y_c p $, so:
+Also, $ M_2 \dot{v}^d = Y_c p $, so:
 
-$ \dot{v}^d &= M_2^{-1} Y_c p $
+$ \dot{v}^d = M_2^{-1} Y_c p $
 
 Thus:
 
-$ M_2 \dot{\eta} &= M_2 (\dot{v} - \dot{v}^d) &= \tau_{\text{real}} + d(t) - Y_c p $
+$ M_2 \dot{\eta} = M_2 (\dot{v} - \dot{v}^d) = \tau_{\text{real}} + d(t) - Y_c p $
 
-Since $ p &= \hat{p} + \Delta p $:
+Since $ p = \hat{p} + \Delta p $:
 
-$ M_2 \dot{\eta} &= \tau_{\text{real}} + d(t) - Y_c (\hat{p} + \Delta p) &= \tau_{\text{real}} + d(t) - Y_c \hat{p} - Y_c \Delta p $
+$ M_2 \dot{\eta} = \tau_{\text{real}} + d(t) - Y_c (\hat{p} + \Delta p) = \tau_{\text{real}} + d(t) - Y_c \hat{p} - Y_c \Delta p $
 
 #### 3.3: Compute $ \Delta p^T \Gamma_p^{-1} \dot{\Delta p} $
-The parameter estimation error is $ \Delta p &= p - \hat{p} $, and $ p $ is constant, so:
+The parameter estimation error is $ \Delta p = p - \hat{p} $, and $ p $ is constant, so:
 
-$ \dot{\Delta p} &= -\dot{\hat{p}} $
+$ \dot{\Delta p} = -\dot{\hat{p}} $
 
 The adaptive law is:
 
-$ \dot{\hat{p}} &= -\Gamma_p Y_c^T \eta $
+$ \dot{\hat{p}} = -\Gamma_p Y_c^T \eta $
 
-$ \dot{\Delta p} &= \Gamma_p Y_c^T \eta $
+$ \dot{\Delta p} = \Gamma_p Y_c^T \eta $
 
-$ \Delta p^T \Gamma_p^{-1} \dot{\Delta p} &= \Delta p^T \Gamma_p^{-1} (\Gamma_p Y_c^T \eta) &= \Delta p^T Y_c^T \eta $
+$ \Delta p^T \Gamma_p^{-1} \dot{\Delta p} = \Delta p^T \Gamma_p^{-1} (\Gamma_p Y_c^T \eta) = \Delta p^T Y_c^T \eta $
 
 #### 3.4: Assemble $ \dot{V_2}$
 Substitute into $ \dot{V_2}$:
 
-$ \dot{V_2}&= \dot{V_1} + \eta^T (\tau_{\text{real}} + d(t) - Y_c \hat{p} - Y_c \Delta p) + \Delta p^T Y_c^T \eta $
+$ \dot{V_2}= \dot{V_1} + \eta^T (\tau_{\text{real}} + d(t) - Y_c \hat{p} - Y_c \Delta p) + \Delta p^T Y_c^T \eta $
 
-$ \dot{V_1} &= -K_x e_x^2 - \frac{K_\theta}{K_y} e_\theta^2 - e_x \eta_1 - \frac{1}{K_y} e_\theta \eta_2 $
+$ \dot{V_1} = -K_x e_x^2 - \frac{K_\theta}{K_y} e_\theta^2 - e_x \eta_1 - \frac{1}{K_y} e_\theta \eta_2 $
 
 Rewrite the error terms:
 
-$ - e_x \eta_1 - \frac{1}{K_y} e_\theta \eta_2 &= -\eta^T \begin{bmatrix} e_x \\ \frac{1}{K_y} e_\theta \end{bmatrix} $
+$ - e_x \eta_1 - \frac{1}{K_y} e_\theta \eta_2 = -\eta^T \begin{bmatrix} e_x \\ \frac{1}{K_y} e_\theta \end{bmatrix} $
 
 So:
 
-$ \dot{V_2}&= -K_x e_x^2 - \frac{K_\theta}{K_y} e_\theta^2 - \eta^T \begin{bmatrix} e_x \\ \frac{1}{K_y} e_\theta \end{bmatrix} + \eta^T (\tau_{\text{real}} + d(t) - Y_c \hat{p}) + \eta^T (-Y_c \Delta p) + \Delta p^T Y_c^T \eta $
+$ \dot{V_2}= -K_x e_x^2 - \frac{K_\theta}{K_y} e_\theta^2 - \eta^T \begin{bmatrix} e_x \\ \frac{1}{K_y} e_\theta \end{bmatrix} + \eta^T (\tau_{\text{real}} + d(t) - Y_c \hat{p}) + \eta^T (-Y_c \Delta p) + \Delta p^T Y_c^T \eta $
 
-Since $ Y_c $ is diagonal ($ Y_c &= \begin{bmatrix} \dot{v}^d & 0 \\ 0 & \dot{\omega}^d \end{bmatrix} $), $ Y_c^T &= Y_c $, and for vectors $ a $ and $ b $, $ a^T Y_c b &= (a^T Y_c b)^T &= b^T Y_c^T a $, so:
+Since $ Y_c $ is diagonal ($ Y_c = \begin{bmatrix} \dot{v}^d & 0 \\ 0 & \dot{\omega}^d \end{bmatrix} $), $ Y_c^T = Y_c $, and for vectors $ a $ and $ b $, $ a^T Y_c b = (a^T Y_c b)^T = b^T Y_c^T a $, so:
 
-$ -\eta^T Y_c \Delta p + \Delta p^T Y_c^T \eta &= -\eta^T Y_c \Delta p + \Delta p^T Y_c \eta &= 0 $
+$ -\eta^T Y_c \Delta p + \Delta p^T Y_c^T \eta = -\eta^T Y_c \Delta p + \Delta p^T Y_c \eta = 0 $
 
 Thus:
 
-$ \dot{V_2}&= -K_x e_x^2 - \frac{K_\theta}{K_y} e_\theta^2 + \eta^T \left( \tau_{\text{real}} + d(t) - Y_c \hat{p} - \begin{bmatrix} e_x \\ \frac{1}{K_y} e_\theta \end{bmatrix} \right) $
+$ \dot{V_2}= -K_x e_x^2 - \frac{K_\theta}{K_y} e_\theta^2 + \eta^T \left( \tau_{\text{real}} + d(t) - Y_c \hat{p} - \begin{bmatrix} e_x \\ \frac{1}{K_y} e_\theta \end{bmatrix} \right) $
 
-Substitute $ \tau_{\text{real}} &= \tau - \bar{e}_\tau $:
+Substitute $ \tau_{\text{real}} = \tau - \bar{e_\tau} $:
 
-$ \dot{V_2}&= -K_x e_x^2 - \frac{K_\theta}{K_y} e_\theta^2 + \eta^T \left( \tau - \bar{e}_\tau + d(t) - Y_c \hat{p} - \begin{bmatrix} e_x \\ \frac{1}{K_y} e_\theta \end{bmatrix} \right) $
+$ \dot{V_2}= -K_x e_x^2 - \frac{K_\theta}{K_y} e_\theta^2 + \eta^T \left( \tau - \bar{e_\tau} + d(t) - Y_c \hat{p} - \begin{bmatrix} e_x \\ \frac{1}{K_y} e_\theta \end{bmatrix} \right) $
 
 Use the desired control:
 
-$ \tau &= Y_c \hat{p} - K_d \eta - d_B \tanh\left(\frac{\eta}{\epsilon}\right) + \begin{bmatrix} e_x \\ \frac{1}{K_y} e_\theta \end{bmatrix} $
+$ \tau = Y_c \hat{p} - K_d \eta - d_B \tanh\left(\frac{\eta}{\epsilon}\right) + \begin{bmatrix} e_x \\ \frac{1}{K_y} e_\theta \end{bmatrix} $
 
-$ \tau - Y_c \hat{p} - \begin{bmatrix} e_x \\ \frac{1}{K_y} e_\theta \end{bmatrix} &= -K_d \eta - d_B \tanh\left(\frac{\eta}{\epsilon}\right) $
+$ \tau - Y_c \hat{p} - \begin{bmatrix} e_x \\ \frac{1}{K_y} e_\theta \end{bmatrix} = -K_d \eta - d_B \tanh\left(\frac{\eta}{\epsilon}\right) $
 
-$ \dot{V_2}&= -K_x e_x^2 - \frac{K_\theta}{K_y} e_\theta^2 + \eta^T \left( -K_d \eta - d_B \tanh\left(\frac{\eta}{\epsilon}\right) + d(t) - \bar{e}_\tau \right) $
+$ \dot{V_2}= -K_x e_x^2 - \frac{K_\theta}{K_y} e_\theta^2 + \eta^T \left( -K_d \eta - d_B \tanh\left(\frac{\eta}{\epsilon}\right) + d(t) - \bar{e_\tau} \right) $
 
-$ \dot{V_2}&= -K_x e_x^2 - \frac{K_\theta}{K_y} e_\theta^2 - \eta^T K_d \eta + \eta^T d(t) - \eta^T d_B \tanh\left(\frac{\eta}{\epsilon}\right) - \eta^T \bar{e}_\tau $
+$ \dot{V_2}= -K_x e_x^2 - \frac{K_\theta}{K_y} e_\theta^2 - \eta^T K_d \eta + \eta^T d(t) - \eta^T d_B \tanh\left(\frac{\eta}{\epsilon}\right) - \eta^T \bar{e_\tau} $
 
 ---
 
 ### Step 4: Compute $ \dot{V_3} $ Explicitly
 Substitute into $ \dot{V_3} $:
 
-$ \dot{V_3} &= \dot{V_2}+ \bar{e}_\tau^T \left( \dot{\tau} - \frac{1}{\gamma} (-\tau_{\text{real}} + a) \right) $
+$ \dot{V_3} = \dot{V_2}+ \bar{e_\tau}^T \left( \dot{\tau} - \frac{1}{\gamma} (-\tau_{\text{real}} + a) \right) $
 
-$ \dot{V_3} &= -K_x e_x^2 - \frac{K_\theta}{K_y} e_\theta^2 - \eta^T K_d \eta + \eta^T d(t) - \eta^T d_B \tanh\left(\frac{\eta}{\epsilon}\right) - \eta^T \bar{e}_\tau + \bar{e}_\tau^T \left( \dot{\tau} - \frac{1}{\gamma} (-\tau_{\text{real}} + a) \right) $
+$ \dot{V_3} = -K_x e_x^2 - \frac{K_\theta}{K_y} e_\theta^2 - \eta^T K_d \eta + \eta^T d(t) - \eta^T d_B \tanh\left(\frac{\eta}{\epsilon}\right) - \eta^T \bar{e_\tau} + \bar{e_\tau}^T \left( \dot{\tau} - \frac{1}{\gamma} (-\tau_{\text{real}} + a) \right) $
 
 #### 4.1: Compute $ \dot{\tau} $
-$ \tau &= Y_c \hat{p} - K_d \eta - d_B \tanh\left(\frac{\eta}{\epsilon}\right) + \begin{bmatrix} e_x \\ \frac{1}{K_y} e_\theta \end{bmatrix} $
+$ \tau = Y_c \hat{p} - K_d \eta - d_B \tanh\left(\frac{\eta}{\epsilon}\right) + \begin{bmatrix} e_x \\ \frac{1}{K_y} e_\theta \end{bmatrix} $
 
-$ \dot{\tau} &= \dot{Y_c} \hat{p} + Y_c \dot{\hat{p}} - K_d \dot{\eta} - d_B \frac{d}{dt} \tanh\left(\frac{\eta}{\epsilon}\right) + \frac{d}{dt} \begin{bmatrix} e_x \\ \frac{1}{K_y} e_\theta \end{bmatrix} $
+$ \dot{\tau} = \dot{Y_c} \hat{p} + Y_c \dot{\hat{p}} - K_d \dot{\eta} - d_B \frac{d}{dt} \tanh\left(\frac{\eta}{\epsilon}\right) + \frac{d}{dt} \begin{bmatrix} e_x \\ \frac{1}{K_y} e_\theta \end{bmatrix} $
 
 - **$ \dot{Y_c} $**:
-  $ Y_c &= \begin{bmatrix} \dot{v}^d & 0 \\ 0 & \dot{\omega}^d \end{bmatrix} $
-  $ \dot{Y_c} &= \begin{bmatrix} \ddot{v}^d & 0 \\ 0 & \ddot{\omega}^d \end{bmatrix} $
+  $ Y_c = \begin{bmatrix} \dot{v}^d & 0 \\ 0 & \dot{\omega}^d \end{bmatrix} $
+  $ \dot{Y_c} = \begin{bmatrix} \ddot{v}^d & 0 \\ 0 & \ddot{\omega}^d \end{bmatrix} $
   Where $ \ddot{v}^d $ and $ \ddot{\omega}^d $ are the second derivatives of the desired velocities, computable from $ v^d $ and $ \omega^d $.
 
 - **$ Y_c \dot{\hat{p}} $**:
-  $ \dot{\hat{p}} &= -\Gamma_p Y_c^T \eta $
-  $ Y_c \dot{\hat{p}} &= -Y_c \Gamma_p Y_c^T \eta $
+  $ \dot{\hat{p}} = -\Gamma_p Y_c^T \eta $
+  $ Y_c \dot{\hat{p}} = -Y_c \Gamma_p Y_c^T \eta $
 
 - **$ -K_d \dot{\eta} $**:
-  $ \dot{\eta} &= M_2^{-1} (\tau_{\text{real}} + d(t) - Y_c p) $
-  $ -K_d \dot{\eta} &= -K_d M_2^{-1} (\tau_{\text{real}} + d(t) - Y_c \hat{p} - Y_c \Delta p) $
+  $ \dot{\eta} = M_2^{-1} (\tau_{\text{real}} + d(t) - Y_c p) $
+  $ -K_d \dot{\eta} = -K_d M_2^{-1} (\tau_{\text{real}} + d(t) - Y_c \hat{p} - Y_c \Delta p) $
 
 - **$ -d_B \frac{d}{dt} \tanh\left(\frac{\eta}{\epsilon}\right) $**:
-  $ \frac{d}{dt} \tanh\left(\frac{\eta}{\epsilon}\right) &= \text{diag}\left(1 - \tanh^2\left(\frac{\eta_i}{\epsilon}\right)\right) \cdot \frac{1}{\epsilon} \dot{\eta} $
-  $ -d_B \frac{d}{dt} \tanh\left(\frac{\eta}{\epsilon}\right) &= -d_B \cdot \text{diag}\left(1 - \tanh^2\left(\frac{\eta_i}{\epsilon}\right)\right) \cdot \frac{1}{\epsilon} M_2^{-1} (\tau_{\text{real}} + d(t) - Y_c p) $
+  $ \frac{d}{dt} \tanh\left(\frac{\eta}{\epsilon}\right) = \text{diag}\left(1 - \tanh^2\left(\frac{\eta_i}{\epsilon}\right)\right) \cdot \frac{1}{\epsilon} \dot{\eta} $
+  $ -d_B \frac{d}{dt} \tanh\left(\frac{\eta}{\epsilon}\right) = -d_B \cdot \text{diag}\left(1 - \tanh^2\left(\frac{\eta_i}{\epsilon}\right)\right) \cdot \frac{1}{\epsilon} M_2^{-1} (\tau_{\text{real}} + d(t) - Y_c p) $
 
 - **$ \frac{d}{dt} \begin{bmatrix} e_x \\ \frac{1}{K_y} e_\theta \end{bmatrix} $**:
-  $ \dot{e_x} &= \omega e_y - v + v_r \cos e_\theta $
-  $ \dot{e_\theta} &= \omega_r - \omega $
-  $ \frac{d}{dt} \begin{bmatrix} e_x \\ \frac{1}{K_y} e_\theta \end{bmatrix} &= \begin{bmatrix} \omega e_y - v + v_r \cos e_\theta \\ \frac{1}{K_y} (\omega_r - \omega) \end{bmatrix} $
+  $ \dot{e_x} = \omega e_y - v + v_r \cos e_\theta $
+  $ \dot{e_\theta} = \omega_r - \omega $
+  $ \frac{d}{dt} \begin{bmatrix} e_x \\ \frac{1}{K_y} e_\theta \end{bmatrix} = \begin{bmatrix} \omega e_y - v + v_r \cos e_\theta \\ \frac{1}{K_y} (\omega_r - \omega) \end{bmatrix} $
 
 Combining these, $ \dot{\tau} $ is a complex expression involving states, their derivatives, and $ \tau_{\text{real}} $, but we’ll keep it symbolic for now.
 
@@ -333,32 +333,32 @@ Combining these, $ \dot{\tau} $ is a complex expression involving states, their 
 ### Step 5: Design $ a $ to Make $ \dot{V_3} < 0 $
 We need $ \dot{V_3} $ to be negative definite. Current form:
 
-$ \dot{V_3} &= -K_x e_x^2 - \frac{K_\theta}{K_y} e_\theta^2 - \eta^T K_d \eta + \eta^T d(t) - \eta^T d_B \tanh\left(\frac{\eta}{\epsilon}\right) - \eta^T \bar{e}_\tau + \bar{e}_\tau^T \left( \dot{\tau} - \frac{1}{\gamma} (-\tau_{\text{real}} + a) \right) $
+$ \dot{V_3} = -K_x e_x^2 - \frac{K_\theta}{K_y} e_\theta^2 - \eta^T K_d \eta + \eta^T d(t) - \eta^T d_B \tanh\left(\frac{\eta}{\epsilon}\right) - \eta^T \bar{e_\tau} + \bar{e_\tau}^T \left( \dot{\tau} - \frac{1}{\gamma} (-\tau_{\text{real}} + a) \right) $
 
 #### 5.1: Handle Indefinite Terms
 - **$ \eta^T d(t) - \eta^T d_B \tanh\left(\frac{\eta}{\epsilon}\right) $**:
   Since $ |d(t)| ≤ d_B $, this term is bounded, and the $ \tanh $ function helps mitigate it, often resulting in a small positive residual, but dominated by negative terms when gains are large.
 
-- **$ - \eta^T \bar{e}_\tau + \bar{e}_\tau^T \left( \dot{\tau} - \dot{\tau}_{\text{real}} \right) $**:
+- **$ - \eta^T \bar{e_\tau} + \bar{e_\tau}^T \left( \dot{\tau} - \dot{\tau_{\text{real}}} \right) $**:
   Choose $ a $ to make this negative. Set:
 
-  $ \dot{\tau}_{\text{real}} &= \dot{\tau} + K_\tau \bar{e}_\tau + \eta $
+  $ \dot{\tau_{\text{real}}} = \dot{\tau} + K_\tau \bar{e_\tau} + \eta $
 
-  $ \frac{1}{\gamma} (-\tau_{\text{real}} + a) &= \dot{\tau} + K_\tau \bar{e}_\tau + \eta $
+  $ \frac{1}{\gamma} (-\tau_{\text{real}} + a) = \dot{\tau} + K_\tau \bar{e_\tau} + \eta $
 
-  $ a &= \tau_{\text{real}} + \gamma ( \dot{\tau} + K_\tau \bar{e}_\tau + \eta ) $
+  $ a = \tau_{\text{real}} + \gamma ( \dot{\tau} + K_\tau \bar{e_\tau} + \eta ) $
 
   Then:
 
-  $ \bar{e}_\tau^T (\dot{\tau} - \dot{\tau}_{\text{real}}) &= \bar{e}_\tau^T (\dot{\tau} - (\dot{\tau} + K_\tau \bar{e}_\tau + \eta)) &= -\bar{e}_\tau^T K_\tau \bar{e}_\tau - \bar{e}_\tau^T \eta $
+  $ \bar{e_\tau}^T (\dot{\tau} - \dot{\tau_{\text{real}}}) = \bar{e_\tau}^T (\dot{\tau} - (\dot{\tau} + K_\tau \bar{e_\tau} + \eta)) = -\bar{e_\tau}^T K_\tau \bar{e_\tau} - \bar{e_\tau}^T \eta $
 
-  $ - \eta^T \bar{e}_\tau + \bar{e}_\tau^T (\dot{\tau} - \dot{\tau}_{\text{real}}) &= -\bar{e}_\tau^T \eta - \bar{e}_\tau^T K_\tau \bar{e}_\tau - \bar{e}_\tau^T \eta &= -K_\tau \bar{e}_\tau^T \bar{e}_\tau - 2 \bar{e}_\tau^T \eta $
+  $ - \eta^T \bar{e_\tau} + \bar{e_\tau}^T (\dot{\tau} - \dot{\tau_{\text{real}}}) = -\bar{e_\tau}^T \eta - \bar{e_\tau}^T K_\tau \bar{e_\tau} - \bar{e_\tau}^T \eta = -K_\tau \bar{e_\tau}^T \bar{e_\tau} - 2 \bar{e_\tau}^T \eta $
 
-  Use Young’s inequality: $ -2 \bar{e}_\tau^T \eta ≤ ||\bar{e}_\tau||^2 + ||\eta||^2 $:
+  Use Young’s inequality: $ -2 \bar{e_\tau}^T \eta ≤ ||\bar{e_\tau}||^2 + ||\eta||^2 $:
 
-  $ \dot{V_3} ≤ -K_x e_x^2 - \frac{K_\theta}{K_y} e_\theta^2 - \eta^T K_d \eta + \eta^T d(t) - \eta^T d_B \tanh\left(\frac{\eta}{\epsilon}\right) - K_\tau \bar{e}_\tau^T \bar{e}_\tau + ||\eta||^2 + ||\bar{e}_\tau||^2 $
+  $ \dot{V_3} ≤ -K_x e_x^2 - \frac{K_\theta}{K_y} e_\theta^2 - \eta^T K_d \eta + \eta^T d(t) - \eta^T d_B \tanh\left(\frac{\eta}{\epsilon}\right) - K_\tau \bar{e_\tau}^T \bar{e_\tau} + ||\eta||^2 + ||\bar{e_\tau}||^2 $
 
-  $ &= -K_x e_x^2 - \frac{K_\theta}{K_y} e_\theta^2 - (\lambda_{\text{min}}(K_d) - 1) ||\eta||^2 - (K_\tau - 1) ||\bar{e}_\tau||^2 + \eta^T d(t) - \eta^T d_B \tanh\left(\frac{\eta}{\epsilon}\right) $
+  $ = -K_x e_x^2 - \frac{K_\theta}{K_y} e_\theta^2 - (\lambda_{\text{min}}(K_d) - 1) ||\eta||^2 - (K_\tau - 1) ||\bar{e_\tau}||^2 + \eta^T d(t) - \eta^T d_B \tanh\left(\frac{\eta}{\epsilon}\right) $
 
 Choose $ K_d $ and $ K_\tau $ such that $ \lambda_{\text{min}}(K_d) > 1 $ and $ K_\tau > 1 $, ensuring all quadratic terms are negative definite, and the disturbance term is bounded, making $ \dot{V_3} < 0 $ outside a small region.
 
@@ -367,40 +367,40 @@ Choose $ K_d $ and $ K_\tau $ such that $ \lambda_{\text{min}}(K_d) > 1 $ and $ 
 ### Final Expressions
 **$ \dot{V_3} $**:
 
-$ \dot{V_3} &= -K_x e_x^2 - \frac{K_\theta}{K_y} e_\theta^2 - \eta^T K_d \eta + \eta^T d(t) - \eta^T d_B \tanh\left(\frac{\eta}{\epsilon}\right) - \eta^T \bar{e}_\tau + \bar{e}_\tau^T \left( \dot{\tau} - \frac{1}{\gamma} (-\tau_{\text{real}} + a) \right) $
+$ \dot{V_3} = -K_x e_x^2 - \frac{K_\theta}{K_y} e_\theta^2 - \eta^T K_d \eta + \eta^T d(t) - \eta^T d_B \tanh\left(\frac{\eta}{\epsilon}\right) - \eta^T \bar{e_\tau} + \bar{e_\tau}^T \left( \dot{\tau} - \frac{1}{\gamma} (-\tau_{\text{real}} + a) \right) $
 
 **Control Input $ a $**:
 
-$ a &= \tau_{\text{real}} + \gamma \left( \dot{\tau} + K_\tau (\tau - \tau_{\text{real}}) + \eta \right) $
+$ a = \tau_{\text{real}} + \gamma \left( \dot{\tau} + K_\tau (\tau - \tau_{\text{real}}) + \eta \right) $
 
 
 where $ K_\tau > 1 $, and $ \dot{\tau} $ is computed as:
 
-$ \dot{\tau} &= \dot{Y_c} \hat{p} + Y_c \dot{\hat{p}} - K_d \dot{\eta} - d_B \frac{d}{dt} \tanh\left(\frac{\eta}{\epsilon}\right) + \frac{d}{dt} \begin{bmatrix} e_x \\ \frac{1}{K_y} e_\theta \end{bmatrix} $
+$ \dot{\tau} = \dot{Y_c} \hat{p} + Y_c \dot{\hat{p}} - K_d \dot{\eta} - d_B \frac{d}{dt} \tanh\left(\frac{\eta}{\epsilon}\right) + \frac{d}{dt} \begin{bmatrix} e_x \\ \frac{1}{K_y} e_\theta \end{bmatrix} $
 
 - **$ \dot{Y_c} $**:
-  $ Y_c &= \begin{bmatrix} \dot{v}^d & 0 \\ 0 & \dot{\omega}^d \end{bmatrix} $
-  $ \dot{Y_c} &= \begin{bmatrix} \ddot{v}^d & 0 \\ 0 & \ddot{\omega}^d \end{bmatrix} $
+  $ Y_c = \begin{bmatrix} \dot{v}^d & 0 \\ 0 & \dot{\omega}^d \end{bmatrix} $
+  $ \dot{Y_c} = \begin{bmatrix} \ddot{v}^d & 0 \\ 0 & \ddot{\omega}^d \end{bmatrix} $
   Where $ \ddot{v}^d $ and $ \ddot{\omega}^d $ are the second derivatives of the desired velocities, computable from $ v^d $ and $ \omega^d $.
 
 - **$ Y_c \dot{\hat{p}} $**:
-  $ \dot{\hat{p}} &= -\Gamma_p Y_c^T \eta $
-  $ Y_c \dot{\hat{p}} &= -Y_c \Gamma_p Y_c^T \eta $
+  $ \dot{\hat{p}} = -\Gamma_p Y_c^T \eta $
+  $ Y_c \dot{\hat{p}} = -Y_c \Gamma_p Y_c^T \eta $
 
 - **$ -K_d \dot{\eta} $**:
-  $ \dot{\eta} &= M_2^{-1} (\tau_{\text{real}} + d(t) - Y_c p) $
-  $ -K_d \dot{\eta} &= -K_d M_2^{-1} (\tau_{\text{real}} + d(t) - Y_c \hat{p} - Y_c \Delta p) $
+  $ \dot{\eta} = M_2^{-1} (\tau_{\text{real}} + d(t) - Y_c p) $
+  $ -K_d \dot{\eta} = -K_d M_2^{-1} (\tau_{\text{real}} + d(t) - Y_c \hat{p} - Y_c \Delta p) $
 
 - **$ -d_B \frac{d}{dt} \tanh\left(\frac{\eta}{\epsilon}\right) $**:
-  $ \frac{d}{dt} \tanh\left(\frac{\eta}{\epsilon}\right) &= \text{diag}\left(1 - \tanh^2\left(\frac{\eta_i}{\epsilon}\right)\right) \cdot \frac{1}{\epsilon} \dot{\eta} $
-  $ -d_B \frac{d}{dt} \tanh\left(\frac{\eta}{\epsilon}\right) &= -d_B \cdot \text{diag}\left(1 - \tanh^2\left(\frac{\eta_i}{\epsilon}\right)\right) \cdot \frac{1}{\epsilon} M_2^{-1} (\tau_{\text{real}} + d(t) - Y_c p) $
+  $ \frac{d}{dt} \tanh\left(\frac{\eta}{\epsilon}\right) = \text{diag}\left(1 - \tanh^2\left(\frac{\eta_i}{\epsilon}\right)\right) \cdot \frac{1}{\epsilon} \dot{\eta} $
+  $ -d_B \frac{d}{dt} \tanh\left(\frac{\eta}{\epsilon}\right) = -d_B \cdot \text{diag}\left(1 - \tanh^2\left(\frac{\eta_i}{\epsilon}\right)\right) \cdot \frac{1}{\epsilon} M_2^{-1} (\tau_{\text{real}} + d(t) - Y_c p) $
 
 - **$ \frac{d}{dt} \begin{bmatrix} e_x \\ \frac{1}{K_y} e_\theta \end{bmatrix} $**:
 
-  $ \dot{e_x} &= \omega e_y - v + v_r \cos e_\theta $
+  $ \dot{e_x} = \omega e_y - v + v_r \cos e_\theta $
 
-  $ \dot{e_\theta} &= \omega_r - \omega $
+  $ \dot{e_\theta} = \omega_r - \omega $
   
-  $ \frac{d}{dt} \begin{bmatrix} e_x \\ \frac{1}{K_y} e_\theta \end{bmatrix} &= \begin{bmatrix} \omega e_y - v + v_r \cos e_\theta \\ \frac{1}{K_y} (\omega_r - \omega) \end{bmatrix} $
+  $ \frac{d}{dt} \begin{bmatrix} e_x \\ \frac{1}{K_y} e_\theta \end{bmatrix} = \begin{bmatrix} \omega e_y - v + v_r \cos e_\theta \\ \frac{1}{K_y} (\omega_r - \omega) \end{bmatrix} $
 
 
