@@ -62,7 +62,7 @@ $$
 where:  
 - $v = [v, \omega]^T$: Velocity vector  
 - $\tau = [\tau_v, \tau_\omega]^T$: Control input  
-- $d(t)$: Bounded disturbance ($|d(t)| \leq d_B$)  
+- $d(t)$: Bounded disturbance ($|d(t)| ≤ d_B$)  
 - $M_2 = \text{diag}(m, I)$: Unknown mass-inertia matrix  
 
 Define parameter vector $p = [m, I]^T$, estimate $\hat{p} = [\hat{m}, \hat{I}]^T$, and regressor matrix:  
@@ -112,7 +112,7 @@ $$
 Resulting in:  
 
 $$
-\dot{V}_1 = -K_x e_x^2 - \frac{K_\theta}{K_y} e_\theta^2 \leq 0
+\dot{V}_1 = -K_x e_x^2 - \frac{K_\theta}{K_y} e_\theta^2 ≤ 0
 $$
 
 ## 4. Dynamic Controller Design (Second Backstepping Step)  
@@ -156,7 +156,7 @@ $$
 Resulting in:  
 
 $$
-\dot{V}_2\leq -K_x e_x^2 - \frac{K_\theta}{K_y} e_\theta^2 - \eta^T K_d \eta \leq 0
+\dot{V}_2≤ -K_x e_x^2 - \frac{K_\theta}{K_y} e_\theta^2 - \eta^T K_d \eta ≤ 0
 $$
 
 
@@ -341,7 +341,7 @@ $ \dot{V}_3 = -K_x e_x^2 - \frac{K_\theta}{K_y} e_\theta^2 - \eta^T K_d \eta + \
 
 #### 5.1: Handle Indefinite Terms
 - **$ \eta^T d(t) - \eta^T d_B \tanh\left(\frac{\eta}{\epsilon}\right) $**:
-  Since $ |d(t)| \leq d_B $, this term is bounded, and the $ \tanh $ function helps mitigate it, often resulting in a small positive residual, but dominated by negative terms when gains are large.
+  Since $ |d(t)| ≤ d_B $, this term is bounded, and the $ \tanh $ function helps mitigate it, often resulting in a small positive residual, but dominated by negative terms when gains are large.
 
 - **$ - \eta^T \bar{e}_\tau + \bar{e}_\tau^T \left( \dot{\tau} - \dot{\tau}_{\text{real}} \right) $**:
   Choose $ a $ to make this negative. Set:
@@ -358,9 +358,9 @@ $ \dot{V}_3 = -K_x e_x^2 - \frac{K_\theta}{K_y} e_\theta^2 - \eta^T K_d \eta + \
 
   $ - \eta^T \bar{e}_\tau + \bar{e}_\tau^T (\dot{\tau} - \dot{\tau}_{\text{real}}) = -\bar{e}_\tau^T \eta - \bar{e}_\tau^T K_\tau \bar{e}_\tau - \bar{e}_\tau^T \eta = -K_\tau \bar{e}_\tau^T \bar{e}_\tau - 2 \bar{e}_\tau^T \eta $
 
-  Use Young’s inequality: $ -2 \bar{e}_\tau^T \eta \leq ||\bar{e}_\tau||^2 + ||\eta||^2 $:
+  Use Young’s inequality: $ -2 \bar{e}_\tau^T \eta ≤ ||\bar{e}_\tau||^2 + ||\eta||^2 $:
 
-  $ \dot{V}_3 \leq -K_x e_x^2 - \frac{K_\theta}{K_y} e_\theta^2 - \eta^T K_d \eta + \eta^T d(t) - \eta^T d_B \tanh\left(\frac{\eta}{\epsilon}\right) - K_\tau \bar{e}_\tau^T \bar{e}_\tau + ||\eta||^2 + ||\bar{e}_\tau||^2 $
+  $ \dot{V}_3 ≤ -K_x e_x^2 - \frac{K_\theta}{K_y} e_\theta^2 - \eta^T K_d \eta + \eta^T d(t) - \eta^T d_B \tanh\left(\frac{\eta}{\epsilon}\right) - K_\tau \bar{e}_\tau^T \bar{e}_\tau + ||\eta||^2 + ||\bar{e}_\tau||^2 $
 
   $ = -K_x e_x^2 - \frac{K_\theta}{K_y} e_\theta^2 - (\lambda_{\text{min}}(K_d) - 1) ||\eta||^2 - (K_\tau - 1) ||\bar{e}_\tau||^2 + \eta^T d(t) - \eta^T d_B \tanh\left(\frac{\eta}{\epsilon}\right) $
 
