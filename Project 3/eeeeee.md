@@ -88,6 +88,7 @@ where:
 - $M_2 = \text{diag}(m, I)$: Unknown mass-inertia matrix  
 
 Define the parameter vector $p = [m, I]^T$, estimate $\hat{p} = [\hat{m}, \hat{I}]^T$, and the regressor matrix:
+
 $$
 Y_c = 
 \begin{bmatrix}
