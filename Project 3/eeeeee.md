@@ -469,4 +469,94 @@ $ \dot{\tau} = \dot{Y}_c \hat{p} + Y_c \dot{\hat{p}} - K_d \dot{\eta} - d_B \fra
   $ \dot{e}_\theta = \omega_r - \omega $
   $ \frac{d}{dt} \begin{bmatrix} e_x \\ \frac{1}{K_y} e_\theta \end{bmatrix} = \begin{bmatrix} \omega e_y - v + v_r \cos e_\theta \\ \frac{1}{K_y} (\omega_r - \omega) \end{bmatrix} $
 
+## Implementation Details
 
+### Path Generation (`generate_path`)
+- Support various geometries: Circle, Ellipse, Spiral, Line, Lemniscate, Sine Wave, Heart, Square Wave, Parabola, Complex.
+- Returns NumPy array of $(x, y)$ points.
+
+### Simulation and Controller Parameters
+
+| Variable          | Description                                       | Example Value   |
+|-------------------|---------------------------------------------------|-----------------|
+| dt                | Simulation time step                              | 0.02 s          |
+| max_steps         | Max number of simulation iterations               | 3000            |
+| wheel_radius      | Wheel radius                                      | 0.005 m         |
+| wheel_width       | Distance between wheels                           | 0.03 m          |
+| robot_mass        | True robot mass                                   | 1.5 kg          |
+| robot_inertia     | True moment of inertia                            | 1.2 kg·m²       |
+| kin_k_forward     | Kinematic forward gain                            | 1.8             |
+| kin_k_theta       | Kinematic orientation gain                        | 4.5             |
+| kin_v_ref         | Reference linear velocity                         | 0.8 m/s         |
+| kin_lookahead     | Lookahead distance                                | 0.4 m           |
+| gamma_p           | Adaptation gains (mass, inertia)                  | [0.1, 0.1]      |
+| Kd_factors        | Dynamic feedback gains factors                    | [5.0, 8.0]      |
+| disturbance_level | Max continuous disturbance bound                  | 0.0 Nm          |
+| use_robust        | Enable robust term                                | true            |
+
+## Usage
+
+1. Clone the repository and navigate to Project 3:
+   ```bash
+   cd "Project 3"
+   ```
+2. (Optional) Create a virtual environment and activate:
+   ```bash
+   python3 -m venv venv
+   source venv/bin/activate
+   ```
+3. Install dependencies:
+   ```bash
+   pip install -r requirements.txt
+   ```
+4. Run the backstepping simulation:
+   ```bash
+   python3 src/mainbackstepping.py
+   ```
+5. View animation and final plots; GIFs are saved under `media/` if enabled.
+
+## Output
+
+- **Animated Trajectories**: GIFs under `media/robot_backstepping_animation_*.gif`.
+- **Static Plots**: Multi-panel figures showing kinematic errors, velocity errors, parameter estimates, torques, and disturbances.
+- **Console Logs**: Simulation progress, timing, and final summary.
+
+```plaintext
+START TRY
+// --- Initialization ---
+PROCEDURE Main
+  // Simulation Setup
+  SET simulation time step (dt)
+  SET robot physical parameters (wheel radius, width, mass, inertia)
+  SET disturbance parameters (continuous level, kick properties)
+  CHOOSE path type (e.g., Circle, Line, Complex)
+  GENERATE desired path points (x, y coordinates)
+  DEFINE initial robot pose (x, y, theta) and velocity (v1, omega) near path start
+
+  // Controller Setup
+  SET kinematic controller parameters (gains, reference velocity, lookahead)
+  INITIALIZE KinematicController instance
+  SET adaptive controller parameters (initial parameter estimates, adaptation gains, feedback gains, disturbance bound, robust term usage)
+  INITIALIZE AdaptiveController instance, passing the KinematicController
+
+  // Simulation and Visualization Setup
+  INITIALIZE Simulation instance with robot params, path, initial state, and disturbance settings
+  INITIALIZE Visualizer instance with the desired path
+  INITIALIZE data storage lists (for states, torques, controller status)
+
+  // --- Simulation Loop ---
+  FOR each simulation step:
+    GET current robot state (pose, velocity)
+    CALCULATE desired kinematic velocities using KinematicController
+    CALCULATE control torques using AdaptiveController
+    APPLY torques to Simulation
+    UPDATE robot state (pose, velocity, disturbance)
+    STORE data (state, torques, errors, etc.)
+    IF controller signals finish, BREAK loop
+  END FOR
+
+  // --- Post-Processing ---
+  PROCESS collected data (errors, parameters, torques, disturbances)
+  CREATE animation and plots using Visualizer
+  DISPLAY or SAVE results
+END PROCEDURE (See <attachments> above for file contents. You may not need to search or read the file again.)
