@@ -113,13 +113,13 @@ $$
 Choose Lyapunov function for kinematic errors:
 
 $$
-V_1 = \frac{1}{2} \left( e_x^2 + e_y^2 + \frac{1}{K_y} e_\theta^2 \right)
+V_1 := \frac{1}{2} \left( e_x^2 + e_y^2 + \frac{1}{K_y} e_\theta^2 \right)
 $$
 
 Time derivative:
 
 <p>
-  $$\dot{V}_1 = e_x (\omega e_y - v + v_r \cos e_\theta) + e_y (-\omega e_x + v_r \sin e_\theta) + \frac{1}{K_y} e_\theta (\omega_r - \omega)$$
+  $$\dot{V}_1 := e_x (\omega e_y - v + v_r \cos e_\theta) + e_y (-\omega e_x + v_r \sin e_\theta) + \frac{1}{K_y} e_\theta (\omega_r - \omega)$$
 </p>
 ### Control Law Design
 
@@ -132,20 +132,10 @@ v^d &= v_r \cos e_\theta + K_x e_x \\
 \end{aligned}
 $$
 
-Closed-loop error dynamics:
+Substituting the control inputs in $\dot{V}_1$ results in:
 
 $$
-\begin{aligned}
-\dot{e}_x &= \omega^d e_y - K_x e_x \\
-\dot{e}_y &= -\omega^d e_x + v_r \sin e_\theta \\
-\dot{e}_\theta &= -K_\theta e_\theta - v_r e_y K_y \frac{\sin e_\theta}{e_\theta}
-\end{aligned}
-$$
-
-Resulting in:
-
-$$
-\dot{V}_1 = -K_x e_x^2 - \frac{K_\theta}{K_y} e_\theta^2 \leq 0
+\dot{V}_1 := -K_x e_x^2 - \frac{K_\theta}{K_y} e_\theta^2 \leq 0
 $$
 
 ## 4. Dynamic Controller Design (Second Backstepping Step)  
