@@ -83,9 +83,16 @@ $$
 
 where:  
 - $v = [v, \omega]^T$: Velocity vector  
-- $\tau = [\tau_v, \tau_\omega]^T$: Control input  
+- $ Control action: a = \tau = [\tau_v, \tau_\omega]^T$  
 - $d(t)$: Bounded disturbance ($|d(t)| \leq d_B$)  
-- $M_2 = \text{diag}(m, I)$: Unknown mass-inertia matrix  
+- $M_2 = \text{diag}(m, I)$: Unknown mass-inertia matrix
+- Define:
+- `p = [m, I]ᵀ` is the unknown parameter vector.
+- `p̂` is the adaptive estimate of `p`.
+- `Δp = p̂ - p` is the estimation error.
+
+Let  `vᵈ = [v₁ᵈ, ωᵈ]ᵀ` be the desired velocity vector from a kinematic controller.
+
 
 Define the parameter vector $p = [m, I]^T$, estimate $\hat{p} = [\hat{m}, \hat{I}]^T$, and the regressor matrix:
 
