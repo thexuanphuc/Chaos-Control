@@ -109,7 +109,7 @@ $$
 ## 3. Kinematic Controller Design (First Backstepping Step)  
 ### 3.1 Lyapunov Function  
 ## Lyapunov Function for Kinematic Errors
-
+For developing kinematic controller we are assuming -v = v^d and -\omega = \omega_d 
 Choose Lyapunov function for kinematic errors:
 
 $$
@@ -137,7 +137,44 @@ Where:
 - Based on these control actions $\dot{V}_1 < 0$
 
 
-$$ \dot{V} := -K_x e_x^2 - \frac{K_\theta}{K_y} e_\theta^2 $$
+$$ \dot{V}_1 := -K_x e_x^2 - \frac{K_\theta}{K_y} e_\theta^2 $$
+## 4. Dynamic Controller Design (Second Backstepping Step)
+
+### 4.1 Velocity Tracking Error
+
+Define velocity error:  
+η = v - vᵈ = [ η₁  
+        η₂ ]
+
+Dynamic model becomes:  
+M₂ · η̇ = τ + d(t) - Y_c · p̂ + Y_c · Δp
+
+---
+
+### 4.2 Composite Lyapunov Function
+
+Composite Lyapunov function:  
+V = V₁ + (1/2) ηᵀ M₂ η + (1/2) Δpᵀ Γ_p⁻¹ Δp
+
+---
+
+### 4.3 Recompute V̇₁ with Velocity Errors
+
+Updated error dynamics:  
+V̇₁ = -Kₓ·eₓ² - (K_θ / K_y)·e_θ² - eₓ·η₁ - (1 / K_y)·e_θ·η₂
+
+---
+
+### 4.4 Compute V̇
+
+Adaptive law and control input:
+
+ p̂̇ = -Γ_p · Y_cᵀ · η  
+ τ = Y_c·p̂ - K_d·η - d_B·tanh(η / ε) + [ eₓ  
+               (1 / K_y)·e_θ ]
+
+Resulting in:  
+V̇ ≤ -Kₓ·eₓ² - (K_θ / K_y)·e_θ² - ηᵀ·K_d·η ≤ 0
 
 
 ## 4. Dynamic Controller Design (Second Backstepping Step)  
