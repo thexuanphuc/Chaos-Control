@@ -131,6 +131,7 @@ v^d &= v_r \cos e_\theta + K_x e_x \\
 \omega^d &= \omega_r + K_\theta e_\theta + v_r e_y K_y \frac{\sin e_\theta}{e_\theta}
 \end{aligned}
 $$
+
 Where:
 - K_x > 0, K_theta > 0, K_y > 0 are positive controller gains.
 - Based on these control actions $\dot{V}_1 < 0$
