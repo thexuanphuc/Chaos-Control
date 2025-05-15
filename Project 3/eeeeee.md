@@ -143,26 +143,29 @@ Where:
 
 ### 4.1 Velocity Tracking Error
 
-Define velocity error:  
-η = v - vᵈ = [ η₁  
-        η₂ ]
+Define velocity error:
 
-Dynamic model becomes:  
-M₂ · η̇ = τ + d(t) - Y_c · p̂ + Y_c · Δp
+![Velocity error](https://latex.codecogs.com/svg.image?\eta%20=%20v%20-%20v^d%20=%20\begin{bmatrix}%20\eta_1%20\\%20\eta_2%20\end{bmatrix})
+
+Dynamic model becomes:
+
+![Dynamic model](https://latex.codecogs.com/svg.image?M_2%20\dot{\eta}%20=%20\tau%20+%20d(t)%20-%20Y_c%20\hat{p}%20+%20Y_c%20\Delta%20p)
 
 ---
 
 ### 4.2 Composite Lyapunov Function
 
-Composite Lyapunov function:  
-V = V₁ + (1/2) ηᵀ M₂ η + (1/2) Δpᵀ Γ_p⁻¹ Δp
+Composite Lyapunov function:
+
+![Composite Lyapunov](https://latex.codecogs.com/svg.image?V%20=%20V_1%20+%20\frac{1}{2}%20\eta^T%20M_2%20\eta%20+%20\frac{1}{2}%20\Delta%20p^T%20\Gamma_p^{-1}%20\Delta%20p)
 
 ---
 
 ### 4.3 Recompute V̇₁ with Velocity Errors
 
-Updated error dynamics:  
-V̇₁ = -Kₓ·eₓ² - (K_θ / K_y)·e_θ² - eₓ·η₁ - (1 / K_y)·e_θ·η₂
+Updated error dynamics:
+
+![V1 dot with velocity errors](https://latex.codecogs.com/svg.image?\dot{V}_1%20=%20-K_x%20e_x^2%20-%20\frac{K_\theta}{K_y}%20e_\theta^2%20-%20e_x%20\eta_1%20-%20\frac{1}{K_y}%20e_\theta%20\eta_2)
 
 ---
 
@@ -170,54 +173,15 @@ V̇₁ = -Kₓ·eₓ² - (K_θ / K_y)·e_θ² - eₓ·η₁ - (1 / K_y)·e_θ·�
 
 Adaptive law and control input:
 
- p̂̇ = -Γ_p · Y_cᵀ · η  
- τ = Y_c·p̂ - K_d·η - d_B·tanh(η / ε) + [ eₓ  
-               (1 / K_y)·e_θ ]
+![Adaptive law](https://latex.codecogs.com/svg.image?\dot{\hat{p}}%20=%20-\Gamma_p%20Y_c^T%20\eta)
 
-Resulting in:  
-V̇ ≤ -Kₓ·eₓ² - (K_θ / K_y)·e_θ² - ηᵀ·K_d·η ≤ 0
+![Control input](https://latex.codecogs.com/svg.image?\tau%20=%20Y_c%20\hat{p}%20-%20K_d%20\eta%20-%20d_B%20\tanh\left(\frac{\eta}{\epsilon}\right)%20+%20\begin{bmatrix}%20e_x%20\\%20\frac{1}{K_y}%20e_\theta%20\end{bmatrix})
 
+Resulting in:
 
-## 4. Dynamic Controller Design (Second Backstepping Step)  
-### 4.1 Velocity Tracking Error  
-Define velocity error:  
-$$
-\eta = v - v^d = \begin{bmatrix} \eta_1 \\ \eta_2 \end{bmatrix}
-$$  
-Dynamic model becomes:  
-$$
-M_2 \dot{\eta} = \tau + d(t) - Y_c \hat{p} + Y_c \Delta p
-$$
-
-### 4.2 Composite Lyapunov Function  
-Composite Lyapunov function:  
-$$
-V = V_1 + \frac{1}{2} \eta^T M_2 \eta + \frac{1}{2} \Delta p^T \Gamma_p^{-1} \Delta p
-$$
-
-### 4.3 Recompute $\dot{V}_1$ with Velocity Errors  
-Updated error dynamics:  
-$$
-\dot{V}_1 = -K_x e_x^2 - \frac{K_\theta}{K_y} e_\theta^2 - e_x \eta_1 - \frac{1}{K_y} e_\theta \eta_2
-$$
-
-### 4.4 Compute $\dot{V}$  
-Adaptive law and control input:  
-$$
-\begin{aligned}
-\dot{\hat{p}} &= -\Gamma_p Y_c^T \eta \\
-\tau &= Y_c \hat{p} - K_d \eta - d_B \tanh\left(\frac{\eta}{\epsilon}\right) + \begin{bmatrix} e_x \\ \frac{1}{K_y} e_\theta \end{bmatrix}
-\end{aligned}
-$$  
-Resulting in:  
-$$
-\dot{V} \leq -K_x e_x^2 - \frac{K_\theta}{K_y} e_\theta^2 - \eta^T K_d \eta \leq 0
-$$
-
+![V dot result](https://latex.codecogs.com/svg.image?\dot{V}%20\leq%20-K_x%20e_x^2%20-%20\frac{K_\theta}{K_y}%20e_\theta^2%20-%20\eta^T%20K_d%20\eta%20\leq%200)
 
 ## 4. Final Controller Design (Third Backstepping Step)  
-
-
 
 ### Step 1: Define the Lyapunov Function and Its Components
 The extended Lyapunov function with actuator dynamics is given by:
@@ -272,91 +236,91 @@ $ \dot{V} = \dot{V}_1 + \eta^T M_2 \dot{\eta} + \Delta p^T \Gamma_p^{-1} \dot{\D
 #### 3.1: Compute $ \dot{V}_1 $
 From the kinematic controller design:
 
-$ \dot{V}_1 = -K_x e_x^2 - \frac{K_\theta}{K_y} e_\theta^2 - e_x \eta_1 - \frac{1}{K_y} e_\theta \eta_2 $
+![V1 dot actuator](https://latex.codecogs.com/svg.image?\dot{V}_1%20=%20-K_x%20e_x^2%20-%20\frac{K_\theta}{K_y}%20e_\theta^2%20-%20e_x%20\eta_1%20-%20\frac{1}{K_y}%20e_\theta%20\eta_2)
 
-This accounts for the velocity error $ \eta = v - v^d $, where $ v = [v, \omega]^T $ is the actual velocity, and $ v^d = [v^d, \omega^d]^T $ is the desired velocity.
+This accounts for the velocity error ![eta](https://latex.codecogs.com/svg.image?\eta%20=%20v%20-%20v^d), where ![v vector](https://latex.codecogs.com/svg.image?v%20=%20%5Bv,%20\omega%5D^T) is the actual velocity, and ![vd vector](https://latex.codecogs.com/svg.image?v^d%20=%20%5Bv^d,%20\omega^d%5D^T) is the desired velocity.
 
-#### 3.2: Compute $ M_2 \dot{\eta} $
-The velocity error is $ \eta = v - v^d $, so:
+#### 3.2: Compute ![M2 eta dot](https://latex.codecogs.com/svg.image?M_2%20\dot{\eta})
+The velocity error is ![eta](https://latex.codecogs.com/svg.image?\eta%20=%20v%20-%20v^d), so:
 
-$ \dot{\eta} = \dot{v} - \dot{v}^d $
+![eta dot](https://latex.codecogs.com/svg.image?\dot{\eta}%20=%20\dot{v}%20-%20\dot{v}^d)
 
 The dynamic model is:
 
-$ M_2 \dot{v} = \tau_{\text{real}} + d(t) $
+![dynamic model actuator](https://latex.codecogs.com/svg.image?M_2%20\dot{v}%20=%20\tau_{\text{real}}%20+%20d(t))
 
-$ \dot{v} = M_2^{-1} (\tau_{\text{real}} + d(t)) $
+![v dot](https://latex.codecogs.com/svg.image?\dot{v}%20=%20M_2^{-1}%20(\tau_{\text{real}}%20+%20d(t)))
 
-Also, $ M_2 \dot{v}^d = Y_c p $, so:
+Also, ![vd dynamic](https://latex.codecogs.com/svg.image?M_2%20\dot{v}^d%20=%20Y_c%20p), so:
 
-$ \dot{v}^d = M_2^{-1} Y_c p $
+![vd dot](https://latex.codecogs.com/svg.image?\dot{v}^d%20=%20M_2^{-1}%20Y_c%20p)
 
 Thus:
 
-$ M_2 \dot{\eta} = M_2 (\dot{v} - \dot{v}^d) = \tau_{\text{real}} + d(t) - Y_c p $
+![M2 eta dot expansion](https://latex.codecogs.com/svg.image?M_2%20\dot{\eta}%20=%20M_2%20(\dot{v}%20-%20\dot{v}^d)%20=%20\tau_{\text{real}}%20+%20d(t)%20-%20Y_c%20p)
 
-Since $ p = \hat{p} + \Delta p $:
+Since ![p split](https://latex.codecogs.com/svg.image?p%20=%20\hat{p}%20+%20\Delta%20p):
 
-$ M_2 \dot{\eta} = \tau_{\text{real}} + d(t) - Y_c (\hat{p} + \Delta p) = \tau_{\text{real}} + d(t) - Y_c \hat{p} - Y_c \Delta p $
+![M2 eta dot split](https://latex.codecogs.com/svg.image?M_2%20\dot{\eta}%20=%20\tau_{\text{real}}%20+%20d(t)%20-%20Y_c%20(\hat{p}%20+%20\Delta%20p)%20=%20\tau_{\text{real}}%20+%20d(t)%20-%20Y_c%20\hat{p}%20-%20Y_c%20\Delta%20p)
 
-#### 3.3: Compute $ \Delta p^T \Gamma_p^{-1} \dot{\Delta p} $
-The parameter estimation error is $ \Delta p = p - \hat{p} $, and $ p $ is constant, so:
+#### 3.3: Compute ![Delta p term](https://latex.codecogs.com/svg.image?\Delta%20p^T%20\Gamma_p^{-1}%20\dot{\Delta%20p})
+The parameter estimation error is ![Delta p](https://latex.codecogs.com/svg.image?\Delta%20p%20=%20p%20-%20\hat{p}), and ![p constant](https://latex.codecogs.com/svg.image?p) is constant, so:
 
-$ \dot{\Delta p} = -\dot{\hat{p}} $
+![Delta p dot](https://latex.codecogs.com/svg.image?\dot{\Delta%20p}%20=%20-\dot{\hat{p}})
 
 The adaptive law is:
 
-$ \dot{\hat{p}} = -\Gamma_p Y_c^T \eta $
+![adaptive law actuator](https://latex.codecogs.com/svg.image?\dot{\hat{p}}%20=%20-\Gamma_p%20Y_c^T%20\eta)
 
-$ \dot{\Delta p} = \Gamma_p Y_c^T \eta $
+![Delta p dot expansion](https://latex.codecogs.com/svg.image?\dot{\Delta%20p}%20=%20\Gamma_p%20Y_c^T%20\eta)
 
-$ \Delta p^T \Gamma_p^{-1} \dot{\Delta p} = \Delta p^T \Gamma_p^{-1} (\Gamma_p Y_c^T \eta) = \Delta p^T Y_c^T \eta $
+![Delta p Gamma term](https://latex.codecogs.com/svg.image?\Delta%20p^T%20\Gamma_p^{-1}%20\dot{\Delta%20p}%20=%20\Delta%20p^T%20\Gamma_p^{-1}%20(\Gamma_p%20Y_c^T%20\eta)%20=%20\Delta%20p^T%20Y_c^T%20\eta)
 
-#### 3.4: Assemble $ \dot{V} $
-Substitute into $ \dot{V} $:
+#### 3.4: Assemble ![V dot](https://latex.codecogs.com/svg.image?\dot{V})
+Substitute into ![V dot](https://latex.codecogs.com/svg.image?\dot{V}):
 
-$ \dot{V} = \dot{V}_1 + \eta^T (\tau_{\text{real}} + d(t) - Y_c \hat{p} - Y_c \Delta p) + \Delta p^T Y_c^T \eta $
+![V dot expansion](https://latex.codecogs.com/svg.image?\dot{V}%20=%20\dot{V}_1%20+%20\eta^T%20(\tau_{\text{real}}%20+%20d(t)%20-%20Y_c%20\hat{p}%20-%20Y_c%20\Delta%20p)%20+%20\Delta%20p^T%20Y_c^T%20\eta)
 
-$ \dot{V}_1 = -K_x e_x^2 - \frac{K_\theta}{K_y} e_\theta^2 - e_x \eta_1 - \frac{1}{K_y} e_\theta \eta_2 $
+![V1 dot repeat](https://latex.codecogs.com/svg.image?\dot{V}_1%20=%20-K_x%20e_x^2%20-%20\frac{K_\theta}{K_y}%20e_\theta^2%20-%20e_x%20\eta_1%20-%20\frac{1}{K_y}%20e_\theta%20\eta_2)
 
 Rewrite the error terms:
 
-$ - e_x \eta_1 - \frac{1}{K_y} e_\theta \eta_2 = -\eta^T \begin{bmatrix} e_x \\ \frac{1}{K_y} e_\theta \end{bmatrix} $
+![error terms rewrite](https://latex.codecogs.com/svg.image?-e_x%20\eta_1%20-%20\frac{1}{K_y}%20e_\theta%20\eta_2%20=%20-\eta^T%20\begin{bmatrix}%20e_x%20\\%20\frac{1}{K_y}%20e_\theta%20\end{bmatrix})
 
 So:
 
-$ \dot{V} = -K_x e_x^2 - \frac{K_\theta}{K_y} e_\theta^2 - \eta^T \begin{bmatrix} e_x \\ \frac{1}{K_y} e_\theta \end{bmatrix} + \eta^T (\tau_{\text{real}} + d(t) - Y_c \hat{p}) + \eta^T (-Y_c \Delta p) + \Delta p^T Y_c^T \eta $
+![V dot error rewrite](https://latex.codecogs.com/svg.image?\dot{V}%20=%20-K_x%20e_x^2%20-%20\frac{K_\theta}{K_y}%20e_\theta^2%20-%20\eta^T%20\begin{bmatrix}%20e_x%20\\%20\frac{1}{K_y}%20e_\theta%20\end{bmatrix}%20+%20\eta^T%20(\tau_{\text{real}}%20+%20d(t)%20-%20Y_c%20\hat{p})%20+%20\eta^T%20(-Y_c%20\Delta%20p)%20+%20\Delta%20p^T%20Y_c^T%20\eta)
 
-Since $ Y_c $ is diagonal ($ Y_c = \begin{bmatrix} \dot{v}^d & 0 \\ 0 & \dot{\omega}^d \end{bmatrix} $), $ Y_c^T = Y_c $, and for vectors $ a $ and $ b $, $ a^T Y_c b = (a^T Y_c b)^T = b^T Y_c^T a $, so:
+Since ![Yc diagonal](https://latex.codecogs.com/svg.image?Y_c) is diagonal, ![YcT=Yc](https://latex.codecogs.com/svg.image?Y_c^T%20=%20Y_c), and for vectors ![a,b](https://latex.codecogs.com/svg.image?a,b), ![aTYcb](https://latex.codecogs.com/svg.image?a^T%20Y_c%20b%20=%20b^T%20Y_c^T%20a), so:
 
-$ -\eta^T Y_c \Delta p + \Delta p^T Y_c^T \eta = -\eta^T Y_c \Delta p + \Delta p^T Y_c \eta = 0 $
+![Yc cross terms](https://latex.codecogs.com/svg.image?-\eta^T%20Y_c%20\Delta%20p%20+%20\Delta%20p^T%20Y_c^T%20\eta%20=%200)
 
 Thus:
 
-$ \dot{V} = -K_x e_x^2 - \frac{K_\theta}{K_y} e_\theta^2 + \eta^T \left( \tau_{\text{real}} + d(t) - Y_c \hat{p} - \begin{bmatrix} e_x \\ \frac{1}{K_y} e_\theta \end{bmatrix} \right) $
+![V dot simplified](https://latex.codecogs.com/svg.image?\dot{V}%20=%20-K_x%20e_x%20-%20\frac{K_\theta}{K_y}%20e_\theta^2%20+%20\eta^T%20\left(%20\tau_{\text{real}}%20+%20d(t)%20-%20Y_c%20\hat{p}%20-%20\begin{bmatrix}%20e_x%20\\%20\frac{1}{K_y}%20e_\theta%20\end{bmatrix}%20\right))
 
-Substitute $ \tau_{\text{real}} = \tau - \bar{e}_\tau $:
+Substitute ![tau real](https://latex.codecogs.com/svg.image?\tau_{\text{real}}%20=%20\tau%20-%20\bar{e}_\tau):
 
-$ \dot{V} = -K_x e_x^2 - \frac{K_\theta}{K_y} e_\theta^2 + \eta^T \left( \tau - \bar{e}_\tau + d(t) - Y_c \hat{p} - \begin{bmatrix} e_x \\ \frac{1}{K_y} e_\theta \end{bmatrix} \right) $
+![V dot with tau real](https://latex.codecogs.com/svg.image?\dot{V}%20=%20-K_x%20e_x^2%20-%20\frac{K_\theta}{K_y}%20e_\theta^2%20+%20\eta^T%20\left(%20\tau%20-%20\bar{e}_\tau%20+%20d(t)%20-%20Y_c%20\hat{p}%20-%20\begin{bmatrix}%20e_x%20\\%20\frac{1}{K_y}%20e_\theta%20\end{bmatrix}%20\right))
 
 Use the desired control:
 
-$ \tau = Y_c \hat{p} - K_d \eta - d_B \tanh\left(\frac{\eta}{\epsilon}\right) + \begin{bmatrix} e_x \\ \frac{1}{K_y} e_\theta \end{bmatrix} $
+![tau desired](https://latex.codecogs.com/svg.image?\tau%20=%20Y_c%20\hat{p}%20-%20K_d%20\eta%20-%20d_B%20\tanh\left(\frac{\eta}{\epsilon}\right)%20+%20\begin{bmatrix}%20e_x%20\\%20\frac{1}{K_y}%20e_\theta%20\end{bmatrix})
 
-$ \tau - Y_c \hat{p} - \begin{bmatrix} e_x \\ \frac{1}{K_y} e_\theta \end{bmatrix} = -K_d \eta - d_B \tanh\left(\frac{\eta}{\epsilon}\right) $
+![tau minus terms](https://latex.codecogs.com/svg.image?\tau%20-%20Y_c%20\hat{p}%20-%20\begin{bmatrix}%20e_x%20\\%20\frac{1}{K_y}%20e_\theta%20\end{bmatrix}%20=%20-K_d%20\eta%20-%20d_B%20\tanh\left(\frac{\eta}{\epsilon}\right))
 
-$ \dot{V} = -K_x e_x^2 - \frac{K_\theta}{K_y} e_\theta^2 + \eta^T \left( -K_d \eta - d_B \tanh\left(\frac{\eta}{\epsilon}\right) + d(t) - \bar{e}_\tau \right) $
+![V dot final](https://latex.codecogs.com/svg.image?\dot{V}%20=%20-K_x%20e_x^2%20-%20\frac{K_\theta}{K_y}%20e_\theta^2%20+%20\eta^T%20\left(%20-K_d%20\eta%20-%20d_B%20\tanh\left(\frac{\eta}{\epsilon}\right)%20+%20d(t)%20-%20\bar{e}_\tau%20\right))
 
-$ \dot{V} = -K_x e_x^2 - \frac{K_\theta}{K_y} e_\theta^2 - \eta^T K_d \eta + \eta^T d(t) - \eta^T d_B \tanh\left(\frac{\eta}{\epsilon}\right) - \eta^T \bar{e}_\tau $
+![V dot expanded](https://latex.codecogs.com/svg.image?\dot{V}%20=%20-K_x%20e_x^2%20-%20\frac{K_\theta}{K_y}%20e_\theta^2%20-%20\eta^T%20K_d%20\eta%20+%20\eta^T%20d(t)%20-%20\eta^T%20d_B%20\tanh\left(\frac{\eta}{\epsilon}\right)%20-%20\eta^T%20\bar{e}_\tau)
 
 ---
 
-### Step 4: Compute $ \dot{V}_3 $ Explicitly
-Substitute into $ \dot{V}_3 $:
+### Step 4: Compute ![V3 dot](https://latex.codecogs.com/svg.image?\dot{V}_3) Explicitly
+Substitute into ![V3 dot](https://latex.codecogs.com/svg.image?\dot{V}_3):
 
-$ \dot{V}_3 = \dot{V} + \bar{e}_\tau^T \left( \dot{\tau} - \frac{1}{\gamma} (-\tau_{\text{real}} + a) \right) $
+![V3 dot expansion](https://latex.codecogs.com/svg.image?\dot{V}_3%20=%20\dot{V}%20+%20\bar{e}_\tau^T%20\left(%20\dot{\tau}%20-%20\frac{1}{\gamma}%20(-\tau_{\text{real}}%20+%20a)%20\right))
 
-$ \dot{V}_3 = -K_x e_x^2 - \frac{K_\theta}{K_y} e_\theta^2 - \eta^T K_d \eta + \eta^T d(t) - \eta^T d_B \tanh\left(\frac{\eta}{\epsilon}\right) - \eta^T \bar{e}_\tau + \bar{e}_\tau^T \left( \dot{\tau} - \frac{1}{\gamma} (-\tau_{\text{real}} + a) \right) $
+![V3 dot full](https://latex.codecogs.com/svg.image?\dot{V}_3%20=%20-K_x%20e_x^2%20-%20\frac{K_\theta}{K_y}%20e_\theta^2%20-%20\eta^T%20K_d%20\eta%20+%20\eta^T%20d(t)%20-%20\eta^T%20d_B%20\tanh\left(\frac{\eta}{\epsilon}\right)%20-%20\eta^T%20\bar{e}_\tau%20+%20\bar{e}_\tau^T%20\left(%20\dot{\tau}%20-%20\frac{1}{\gamma}%20(-\tau_{\text{real}}%20+%20a)%20\right))
 
 #### 4.1: Compute $ \dot{\tau} $
 $ \tau = Y_c \hat{p} - K_d \eta - d_B \tanh\left(\frac{\eta}{\epsilon}\right) + \begin{bmatrix} e_x \\ \frac{1}{K_y} e_\theta \end{bmatrix} $
@@ -415,7 +379,7 @@ $ \dot{V}_3 = -K_x e_x^2 - \frac{K_\theta}{K_y} e_\theta^2 - \eta^T K_d \eta + \
 
   Use Young’s inequality: $ -2 \bar{e}_\tau^T \eta \leq ||\bar{e}_\tau||^2 + ||\eta||^2 $:
 
-  $ \dot{V}_3 \leq -K_x e_x^2 - \frac{K_\theta}{K_y} e_\theta^2 - \eta^T K_d \eta + \eta^T d(t) - \eta^T d_B \tanh\left(\frac{\eta}{\epsilon}\right) - K_\tau \bar{e}_\tau^T \bar{e}_\tau + ||\eta||^2 + ||\bar{e}_\tau||^2 $
+  $ \dot{V}_3 \leq -K_x e_x^2 - \frac{K_\theta}{K_y} e_\theta^2 - \eta^T K_d \eta + \eta^T d(t) - \eta^T d_B \tanh\left(\frac{\eta}{\epsilon}\right) - K_\tau \bar{e}_\tau^T \bar{e}__\tau + ||\eta||^2 + ||\bar{e}_\tau||^2 $
 
   $ = -K_x e_x^2 - \frac{K_\theta}{K_y} e_\theta^2 - (\lambda_{\text{min}}(K_d) - 1) ||\eta||^2 - (K_\tau - 1) ||\bar{e}_\tau||^2 + \eta^T d(t) - \eta^T d_B \tanh\left(\frac{\eta}{\epsilon}\right) $
 
