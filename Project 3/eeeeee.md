@@ -27,13 +27,6 @@ Where:
 
 The `Simulation` class uses this model implicitly when converting wheel velocities (commands from the controller) into chassis motion (`v`, `omega`) and updating the state (`x`, `y`, `theta`).
 
-The reference trajectory to be tracked is:  
-$$
-\begin{aligned}
-\dot{x}_r &= v_r \cos \theta_r \\
-\dot{y}_r &= v_r \sin \theta_r \\
-\dot{\theta}_r &= \omega_r 
-\end{aligned}
 $$  
 Tracking errors in the robot's body frame:  
 $$
@@ -52,7 +45,6 @@ where $v_r(t)$ and $\omega_r(t)$ are the velocity references.
 The tracking error is defined relative to the **lookahead point** (`x_d`, `y_d`) and the **reference orientation** (`theta_d`). The errors are expressed in the robot's body frame:
 
 ### Error Definition in Local Coordinates
-
 
 $$
 \begin{aligned}
