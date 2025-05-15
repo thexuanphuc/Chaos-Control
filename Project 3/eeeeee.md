@@ -28,6 +28,7 @@ Where:
 The `Simulation` class uses this model implicitly when converting wheel velocities (commands from the controller) into chassis motion (`v`, `omega`) and updating the state (`x`, `y`, `theta`).
   
 Tracking errors in the robot's body frame:  
+
 $$
 \dot{x}_r = v_r \cos \theta_r
 $$
