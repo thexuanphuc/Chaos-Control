@@ -148,6 +148,7 @@ Resulting in:
 $$
 \dot{V}_1 = -K_x e_x^2 - \frac{K_\theta}{K_y} e_\theta^2 \leq 0
 $$
+
 ## 4. Dynamic Controller Design (Second Backstepping Step)  
 ### 4.1 Velocity Tracking Error  
 Define velocity error:  
