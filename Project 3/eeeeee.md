@@ -137,7 +137,7 @@ Where:
 - Based on these control actions $\dot{V}_1 < 0$
 
 
-`\dot{V}_1 := -K_x e_x^2 - \frac{K_\theta}{K_y} e_\theta^2`
+![Lyapunov equation](https://latex.codecogs.com/svg.image?\dot{V}_1%20:=%20-K_x%20e_x^2%20-%20\frac{K_\theta}{K_y}%20e_\theta^2)
 
 ## 4. Dynamic Controller Design (Second Backstepping Step)
 
