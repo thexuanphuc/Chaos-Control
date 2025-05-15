@@ -345,7 +345,7 @@ $ \dot{V}_3 = -K_x e_x^2 - \frac{K_\theta}{K_y} e_\theta^2 - \eta^T K_d \eta + \
 - **$ \eta^T d(t) - \eta^T d_B \tanh\left(\frac{\eta}{\epsilon}\right) $**:
   Since $ |d(t)| \leq d_B $, this term is bounded, and the $ \tanh $ function helps mitigate it, often resulting in a small positive residual, but dominated by negative terms when gains are large.
 
-- **$ - \eta^T \bar{e}_\tau + \bar{e}_\tau^T \left( \dot{\tau} - \dot{\tau}_{\text{real}} \right) $**:
+<!-- - **$ - \eta^T \bar{e}_\tau + \bar{e}_\tau^T \left( \dot{\tau} - \dot{\tau}_{\text{real}} \right) $**:
   Choose $ a $ to make this negative. Set:
 
   $ \dot{\tau}_{\text{real}} = \dot{\tau} + K_\tau \bar{e}_\tau + \eta $
@@ -360,11 +360,11 @@ $ \dot{V}_3 = -K_x e_x^2 - \frac{K_\theta}{K_y} e_\theta^2 - \eta^T K_d \eta + \
 
   $ - \eta^T \bar{e}_\tau + \bar{e}_\tau^T (\dot{\tau} - \dot{\tau}_{\text{real}}) = -\bar{e}_\tau^T \eta - \bar{e}_\tau^T K_\tau \bar{e}_\tau - \bar{e}_\tau^T \eta = -K_\tau \bar{e}_\tau^T \bar{e}_\tau - 2 \bar{e}_\tau^T \eta $
 
-  Use Young’s inequality: $ -2 \bar{e}_\tau^T \eta \leq ||\bar{e}_\tau||^2 + ||\eta||^2 $:
+  <!-- Use Young’s inequality: $ -2 \bar{e}_\tau^T \eta \leq ||\bar{e}_\tau||^2 + ||\eta||^2 $: -->
 
   $ \dot{V}_3 \leq -K_x e_x^2 - \frac{K_\theta}{K_y} e_\theta^2 - \eta^T K_d \eta + \eta^T d(t) - \eta^T d_B \tanh\left(\frac{\eta}{\epsilon}\right) - K_\tau \bar{e}_\tau^T \bar{e}_\tau + ||\eta||^2 + ||\bar{e}_\tau||^2 $
 
-  $ = -K_x e_x^2 - \frac{K_\theta}{K_y} e_\theta^2 - (\lambda_{\text{min}}(K_d) - 1) ||\eta||^2 - (K_\tau - 1) ||\bar{e}_\tau||^2 + \eta^T d(t) - \eta^T d_B \tanh\left(\frac{\eta}{\epsilon}\right) $
+  $ = -K_x e_x^2 - \frac{K_\theta}{K_y} e_\theta^2 - (\lambda_{\text{min}}(K_d) - 1) ||\eta||^2 - (K_\tau - 1) ||\bar{e}_\tau||^2 + \eta^T d(t) - \eta^T d_B \tanh\left(\frac{\eta}{\epsilon}\right) $ -->
 
 Choose $ K_d $ and $ K_\tau $ such that $ \lambda_{\text{min}}(K_d) > 1 $ and $ K_\tau > 1 $, ensuring all quadratic terms are negative definite, and the disturbance term is bounded, making $ \dot{V}_3 < 0 $ outside a small region.
 
