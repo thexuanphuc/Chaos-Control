@@ -84,6 +84,10 @@ Time derivative:
 $$
 \dot{V}_1 = e_x (\omega e_y - v + v_r \cos e_\theta) + e_y (-\omega e_x + v_r \sin e_\theta) + \frac{1}{K_y} e_\theta (\omega_r - \omega)
 $$
+ phuccccccccccccccccccc
+$$
+\dot{V}_1 = e_x (\omega e_y - v + v_r \cos e_\theta) + e_y (-\omega e_x + v_r \sin e_\theta) + \frac{1}{K_y} e_\theta (\omega_r - \omega)
+$$
 
 ### 3.2 Control Law Design  
 Virtual control inputs:  
