@@ -73,17 +73,22 @@ $$
 $$
 
 ### 2.2 Dynamic Model  
-The dynamic model governs velocity dynamics:  
+## Dynamic Model
+
+The dynamic model governs velocity dynamics:
+
 $$
 M_2 \dot{v} = \tau + d(t)
-$$  
+$$
+
 where:  
 - $v = [v, \omega]^T$: Velocity vector  
 - $\tau = [\tau_v, \tau_\omega]^T$: Control input  
 - $d(t)$: Bounded disturbance ($|d(t)| \leq d_B$)  
 - $M_2 = \text{diag}(m, I)$: Unknown mass-inertia matrix  
 
-Define parameter vector $p = [m, I]^T$, estimate $\hat{p} = [\hat{m}, \hat{I}]^T$, and regressor matrix:  
+Define the parameter vector $p = [m, I]^T$, estimate $\hat{p} = [\hat{m}, \hat{I}]^T$, and the regressor matrix:
+
 $$
 Y_c = \begin{bmatrix} \dot{v}^d & 0 \\ 0 & \dot{\omega}^d \end{bmatrix}, \quad M_2 \dot{v}^d = Y_c p
 $$
