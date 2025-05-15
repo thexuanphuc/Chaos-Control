@@ -1,11 +1,58 @@
 # Backstepping-Based Adaptive Controller Derivation for a Nonholonomic Mobile Robot  
-*May 10, 2025*  
 
-## Abstract  
-This document presents a detailed derivation of a backstepping-based adaptive controller for a nonholonomic mobile robot with unknown mass, inertia, and bounded external disturbances. The control design is split into two stages: a kinematic controller to stabilize position and orientation tracking errors, and a dynamic controller to ensure velocity tracking while estimating unknown parameters. Lyapunov stability theory is used to guarantee bounded tracking errors and parameter estimates.
+*May 2025*
 
-## 1. Introduction  
-This paper derives a robust adaptive controller for a 3-wheeled nonholonomic mobile robot under unknown mass, inertia, and external disturbances (e.g., wind). The controller employs backstepping to combine a kinematic path-following law with a dynamic adaptive law, ensuring trajectory tracking despite uncertainties. The derivation uses Lyapunov stability theory to ensure bounded tracking errors and parameter estimates.
+## 📑 Table of Contents
+- [Introduction](#-introduction)
+- [Problem Statement](#-problem-statement)
+  - [System Description](#system-description)
+- [System Model](#2-system-model)
+  - [Kinematic Model](#21-kinematic-model)
+  - [Error Definition in Local Coordinates](#error-definition-in-local-coordinates)
+  - [Error Dynamics in Local Coordinates](#error-dynamics-in-local-coordinates)
+  - [Dynamic Model](#22-dynamic-model)
+- [Kinematic Controller Design (First Backstepping Step)](#3-kinematic-controller-design-first-backstepping-step)
+  - [Lyapunov Function](#31-lyapunov-function)
+  - [Control Law Design](#control-law-design)
+- [Dynamic Controller Design (Second Backstepping Step)](#4-dynamic-controller-design-second-backstepping-step)
+  - [Velocity Tracking Error](#41-velocity-tracking-error)
+  - [Composite Lyapunov Function](#42-composite-lyapunov-function)
+  - [Recompute $\dot{V}_1$ with Velocity Errors](#43-recompute-dotv_1-with-velocity-errors)
+  - [Compute $\dot{V}$](#44-compute-dotv)
+- [Final Controller Design (Third Backstepping Step)](#4-final-controller-design-third-backstepping-step)
+  - [Step 1: Lyapunov Function and Components](#step-1-define-the-lyapunov-function-and-its-components)
+  - [Step 2: Time Derivative $\dot{V}_3$](#step-2-compute-the-time-derivative--dotv_3-)
+  - [Step 3: $\dot{V}$ with Actuator Dynamics](#step-3-compute--dotv--with-actuator-dynamics)
+  - [Step 4: Compute $\dot{V}_3$ Explicitly](#step-4-compute--dotv_3--explicitly)
+  - [Step 5: Design $a$ to Make $\dot{V}_3 < 0$](#step-5-design--a--to-make--dotv_3--0)
+  - [Final Expressions](#final-expressions)
+
+## 🧭 Introduction
+
+This repository presents an adaptive backstepping control strategy for path following in a 3-wheeled nonholonomic mobile robot operating under unknown mass, inertia, and external disturbances (e.g., wind). The proposed controller combines:
+
+- A kinematic-level backstepping controller that computes desired linear and angular velocities based on position and orientation errors.
+- A dynamic-level adaptive backstepping controller that ensures the desired velocities are tracked while estimating unknown parameters and rejecting disturbances.
+
+All derivations are based on Lyapunov stability theory to guarantee bounded tracking errors and parameter estimates.
+---
+
+## ❓ Problem Statement
+
+Traditional controllers that ignore physical uncertainties (e.g., mass and inertia) or environmental disturbances (e.g., wind) often fail to stabilize nonholonomic robots in realistic scenarios. To overcome this, we design a three-level adaptive backstepping controller.
+
+### System Description
+
+We consider a nonholonomic mobile robot described by:
+
+- State variables:  
+  s ∈ ℝⁿ  
+- Control action (torques/forces):  
+  a ∈ ℝᵐ  
+- Unknown physical parameters:  
+  θ ∈ ℝᵖ  
+
+The goal is to follow a desired trajectory accurately, despite uncertainties in the robot's dynamics and environmental disturbances.
 
 ## 2. System Model  
 ### 2.1 Kinematic Model  
